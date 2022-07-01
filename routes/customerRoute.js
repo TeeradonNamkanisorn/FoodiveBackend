@@ -7,6 +7,8 @@ const authenticator = require('../middlewares/authenticator');
 router.get('/getMe', customerController.getMe);
 router.get('/restaurant/:id', customerController.getRestaurantById);
 
+router.post('/restaurantsCart', customerController.getAllRestaurantsOfCarts);
+
 router.post('/addCart', customerController.createCart);
 
 router.post('/cart/:cartId/append-menu', customerController.appendMenu);

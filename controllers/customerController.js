@@ -565,6 +565,41 @@ exports.getAllCarts = async (req, res, next) => {
   }
 };
 
+exports.getAllRestaurantsOfCarts = async (req, res, next) => {
+  try {
+    const customerId = req.user.id;
+    const orders = await Order.findAll({
+      where: {
+        customerId,
+        status: 'IN_CART',
+      },
+      include: {
+        model: Restaurant,
+      },
+    });
+
+    const restaurants = JSON.parse(JSON.stringify(orders)).map((order) => {
+      return {
+        id: order.Restaurant.id,
+        name: order.Restaurant.name,
+        image: order.Restaurant.image,
+        latitude: order.Restaurant.latitude,
+        longitude: order.Restaurant.longitude,
+        cart: {
+          id: order.id,
+          price: null,
+          status: order.status,
+          customerId: order.customerId,
+        },
+      };
+    });
+
+    res.json({ restaurants });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getCart = async (req, res, next) => {
   try {
     const { cartId } = req.params;

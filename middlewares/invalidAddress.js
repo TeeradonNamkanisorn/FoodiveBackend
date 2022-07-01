@@ -1,3 +1,4 @@
 module.exports = (req, res, next) => {
-    res.status(404).send("invalid address")
-}
+  console.log('invalid addressss');
+  res.status(200).send({ message: 'invalid addresssssssssss' });
+};

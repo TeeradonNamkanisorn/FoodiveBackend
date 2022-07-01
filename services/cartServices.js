@@ -159,6 +159,7 @@ const getFullCart = async ({ OrderMenus }, restaurantId) => {
     totalPrice += +allMenuList[menuIdItem.menuId].price;
     return {
       name: allMenuList[menuIdItem.menuId].name,
+      image: allMenuList[menuIdItem.menuId].menuImage,
       price: allMenuList[menuIdItem.menuId].price,
       OrderMenuOptionGroups: menuIdItem.OrderMenuOptionGroups.map(
         (optionGroup) => {

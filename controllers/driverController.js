@@ -104,7 +104,20 @@ exports.updateLocation = async (req, res, next) => {
   }
 };
 
-exports.acceptOrder = async (req, res, next) => {};
+exports.acceptOrder = async (req, res, next) => {
+  try {
+    const driverId = req.user.id;
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    await Order.update({ driverId }, { where: { id } });
+
+    res.json({ message: `orderId : ${id} accepted by driverId : ${driverId}` });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.searchOrder = async (req, res, next) => {
   try {
@@ -150,6 +163,61 @@ exports.getOrderById = async (req, res, next) => {
       createError('You cannot view this resource', 400);
 
     res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getIncome = async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { id } = req.body;
+    let order = await Order.findAll({
+      where: {
+        status: 'DELIVERED',
+        driverId: id,
+      },
+      attributes: [
+        [sequelize.fn('sum', sequelize.col('deliveryFee')), 'totalDeliveryFee'],
+      ],
+    });
+
+    res.json({ income: order });
+  } catch (err) {
+    await t.rollback();
+    next(err);
+  }
+};
+
+exports.deliveringStatus = async (req, res, next) => {
+  try {
+    const driverId = req.user.id;
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    await Order.update({ status: 'DELIVERY_PENDING' }, { where: { id } });
+
+    res.json({
+      message: `orderId : ${id} status : ${'DELIVERY_PENDING'} by driverId : ${driverId}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deliveredStatus = async (req, res, next) => {
+  try {
+    const driverId = req.user.id;
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    await Order.update({ status: 'DELIVERED' }, { where: { id } });
+
+    res.json({
+      message: `orderId : ${id} status : ${'DELIVERED'} by driverId : ${driverId}`,
+    });
   } catch (err) {
     next(err);
   }

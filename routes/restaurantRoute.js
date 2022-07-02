@@ -51,5 +51,7 @@ router.post('/assign-tags', restaurantController.assignTags);
 router.put('/change-tags', restaurantController.changeTags);
 router.get('/pickDriver', restaurantController.pickDriver);
 
+router.get('/getFee/:id', restaurantController.getDeliveryFee);
+
 module.exports = router;
 //

@@ -29,6 +29,16 @@ module.exports.createCart = async (req, res, next) => {
   try {
     const { menus, restaurantId } = req.body;
 
+    const existCart = await Order.findOne({
+      where: {
+        customerId: req.user.id,
+        restaurantId: restaurantId,
+        status: 'IN_CART',
+      },
+    });
+
+    if (existCart) createError('Cart already exists', 400);
+
     const order = await Order.create(
       {
         customerId: req.user.id,
@@ -101,6 +111,8 @@ exports.appendMenu = async (req, res, next) => {
     const { menu } = req.body;
     const { cartId: orderId } = req.params;
 
+    console.log('menuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu');
+    console.log(menu);
     const orderMenu = await OrderMenu.create({
       orderId,
       comment: menu.comment,

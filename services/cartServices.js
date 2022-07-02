@@ -161,15 +161,19 @@ const getFullCart = async ({ OrderMenus }, restaurantId) => {
       name: allMenuList[menuIdItem.menuId].name,
       image: allMenuList[menuIdItem.menuId].menuImage,
       price: allMenuList[menuIdItem.menuId].price,
+      menuId: allMenuList[menuIdItem.menuId].id,
       OrderMenuOptionGroups: menuIdItem.OrderMenuOptionGroups.map(
         (optionGroup) => {
           return {
             name: allMenuOptionGroups[optionGroup.menuOptionGroupId].name,
+            menuOptionGroupId:
+              allMenuOptionGroups[optionGroup.menuOptionGroupId].id,
             options: optionGroup.OrderMenuOptions.map((option) => {
               totalPrice += +allMenuOptions[option.menuOptionId].price;
               return {
                 name: allMenuOptions[option.menuOptionId].name,
                 price: allMenuOptions[option.menuOptionId].price,
+                menuOptionId: allMenuOptions[option.menuOptionId].id,
               };
             }),
           };

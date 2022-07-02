@@ -29,6 +29,16 @@ module.exports.createCart = async (req, res, next) => {
   try {
     const { menus, restaurantId } = req.body;
 
+    const existCart = await Order.findOne({
+      where: {
+        customerId: req.user.id,
+        restaurantId: restaurantId,
+        status: 'IN_CART',
+      },
+    });
+
+    if (existCart) createError('Cart already exists', 400);
+
     const order = await Order.create(
       {
         customerId: req.user.id,

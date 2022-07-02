@@ -732,7 +732,7 @@ module.exports.fillCart = async (req, res, next) => {
           const newOptionName = orderMenuOption.MenuOption.name;
           const newOptionPrice = orderMenuOption.MenuOption.price;
           const optionId = orderMenuOption.MenuOption.id;
-          console.log(newOptionPrice);
+
           await OrderMenuOption.update(
             { name: newOptionName, price: newOptionPrice },
             {

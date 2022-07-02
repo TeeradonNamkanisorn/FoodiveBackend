@@ -32,8 +32,6 @@ exports.registerRestaurant = async (req, res, next) => {
     const restaurant = await Restaurant.create(
       {
         name,
-        latitude,
-        longitude,
         email,
         password: hashedPw,
         phoneNumber,
@@ -214,7 +212,7 @@ exports.loginDriver = async (req, res, next) => {
     });
 
     if (!driver) {
-      createError('You are unauthorize', 400);
+      createError('You are unauthorized', 400);
     }
 
     const isMatch = await bcrypt.compare(password, driver.password);

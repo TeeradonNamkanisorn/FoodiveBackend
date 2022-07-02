@@ -104,38 +104,40 @@ module.exports.createCart = async (req, res, next) => {
   }
 };
 
-exports.appendMenu = async (req, res, next) => {
+exports.addMenusToCart = async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {
-    const { menu } = req.body;
+    const { menus } = req.body;
     const { cartId: orderId } = req.params;
 
-    const orderMenu = await OrderMenu.create({
-      orderId,
-      comment: menu.comment,
-      menuId: menu.id,
-    });
+    for (let menu of menus) {
+      const orderMenu = await OrderMenu.create({
+        orderId,
+        comment: menu.comment,
+        menuId: menu.id,
+      });
 
-    for (let optionGroup of menu.optionGroups) {
-      console.log('asdfasdfas', optionGroup.id);
-      const orderOptionGroup = await OrderMenuOptionGroup.create(
-        {
-          orderMenuId: orderMenu.id,
-          menuOptionGroupId: optionGroup.id,
-        },
-        { transaction: t },
-      );
-
-      for (let option of optionGroup.options) {
-        await OrderMenuOption.create(
+      for (let optionGroup of menu.optionGroups) {
+        console.log('asdfasdfas', optionGroup.id);
+        const orderOptionGroup = await OrderMenuOptionGroup.create(
           {
             orderMenuId: orderMenu.id,
-            orderMenuOptionGroupId: orderOptionGroup.id,
-            menuOptionId: option.id,
+            menuOptionGroupId: optionGroup.id,
           },
           { transaction: t },
         );
+
+        for (let option of optionGroup.options) {
+          await OrderMenuOption.create(
+            {
+              orderMenuId: orderMenu.id,
+              orderMenuOptionGroupId: orderOptionGroup.id,
+              menuOptionId: option.id,
+            },
+            { transaction: t },
+          );
+        }
       }
     }
 

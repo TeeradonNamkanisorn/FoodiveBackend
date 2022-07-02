@@ -46,6 +46,8 @@ module.exports = (role) => async (req, res, next) => {
 
     if (!user) createError('You are unauthorized', 401);
 
+    user = { ...JSON.parse(JSON.stringify(user)), role: payload.role };
+
     req.user = user;
     next();
   } catch (err) {

@@ -4,10 +4,10 @@ const io = new Server({
     origin: '*',
   },
 });
-const SOCKET_PORT = 3050;
+const SOCKET_PORT = 4444;
 
 io.on('connection', (socket) => {
-  console.log(socket);
+  console.log('someone has connected');
 });
 
 io.listen(SOCKET_PORT);

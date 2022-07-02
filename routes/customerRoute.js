@@ -19,7 +19,7 @@ router.delete('/address/:addressId', customerController.deleteAddress);
 router.post('/searchMenus', customerController.fetchMenus);
 router.get('/getMenu/:menuId', customerController.getMenuById);
 
-router.post('/cart/:cartId/append-menu', customerController.appendMenu);
+router.post('/cart/:cartId/append-menu', customerController.addMenusToCart);
 router.get('/restaurantsCart', customerController.getAllRestaurantsOfCarts);
 router.post('/addCart', customerController.createCart);
 router.get('/cart/:cartId', customerController.getCart);

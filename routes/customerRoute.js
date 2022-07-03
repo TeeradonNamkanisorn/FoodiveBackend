@@ -6,7 +6,7 @@ const authenticator = require('../middlewares/authenticator');
 
 router.get('/getMe', customerController.getMe);
 router.get('/restaurant/:id', customerController.getRestaurantById);
-router.delete('/deleteMenu', customerController.removeMenu);
+router.delete('/deleteMenu/:orderMenuId', customerController.removeMenu);
 router.put('/modifyMenu', customerController.modifyMenu);
 router.post(
   '/update',

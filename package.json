@@ -8,7 +8,7 @@
     "start": "nodemon server.js",
     "seed": "node seeder.js",
     "sync": "node sync",
-    "socket": "node ./socket/socketServer"
+    "socket": "nodemon ./socket/socketServer"
   },
   "author": "",
   "license": "ISC",

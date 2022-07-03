@@ -408,15 +408,15 @@ const menuTags = [
 
 const categories = [
   {
-    name: 'category 1',
+    name: 'other',
     restaurantId: 1,
   },
   {
-    name: 'category 2',
+    name: 'other',
     restaurantId: 2,
   },
   {
-    name: 'category 3',
+    name: 'other',
     restaurantId: 3,
   },
 ];

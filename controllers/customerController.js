@@ -18,6 +18,7 @@ const {
   calculatePriceFromMenuList,
   getCartMenuArrayWithoutOptions,
   getFullCart,
+  getFullMenuObj,
 } = require('../services/cartServices');
 const createError = require('../services/createError');
 const { destroy } = require('../utils/cloudinary');
@@ -50,6 +51,10 @@ module.exports.createCart = async (req, res, next) => {
       },
     );
 
+    //validating objecttttttttt
+
+    const restaurantMenuObj = await getFullMenuObj(restaurantId);
+
     for (let menu of menus) {
       const menuId = menu.id;
       const menuComment = menu.comment;
@@ -59,6 +64,12 @@ module.exports.createCart = async (req, res, next) => {
       );
 
       for (let optionGroup of menu.optionGroups) {
+        if (
+          // If the the option group isn't on the eligable list
+          !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
+        ) {
+          createError('invalid option group');
+        }
         const orderOptionGroup = await OrderMenuOptionGroup.create(
           {
             orderMenuId: orderMenu.id,
@@ -68,6 +79,15 @@ module.exports.createCart = async (req, res, next) => {
         );
 
         for (let option of optionGroup.options) {
+          console.log(
+            restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id],
+          );
+          if (
+            !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
+              .options[option.id]
+          ) {
+            createError('invalid option');
+          }
           await OrderMenuOption.create(
             {
               orderMenuId: orderMenu.id,
@@ -110,16 +130,30 @@ exports.addMenusToCart = async (req, res, next) => {
   try {
     const { menus } = req.body;
     const { cartId: orderId } = req.params;
+    const existCart = await Order.findByPk(orderId, { transaction: t });
+    if (!existCart) createError("cart doesn't exist", 400);
+    if (existCart.status !== 'IN_CART')
+      createError('The current entity is not a cart.', 400);
+    const restaurantId = existCart.restaurantId;
+
+    const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
-      const orderMenu = await OrderMenu.create({
-        orderId,
-        comment: menu.comment,
-        menuId: menu.id,
-      });
+      const orderMenu = await OrderMenu.create(
+        {
+          orderId,
+          comment: menu.comment,
+          menuId: menu.id,
+        },
+        {
+          transaction: t,
+        },
+      );
 
       for (let optionGroup of menu.optionGroups) {
-        console.log('asdfasdfas', optionGroup.id);
+        if (!restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]) {
+          createError('invalid option group');
+        }
         const orderOptionGroup = await OrderMenuOptionGroup.create(
           {
             orderMenuId: orderMenu.id,
@@ -129,6 +163,12 @@ exports.addMenusToCart = async (req, res, next) => {
         );
 
         for (let option of optionGroup.options) {
+          if (
+            !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
+              .options[option.id]
+          ) {
+            createError('invalid option');
+          }
           await OrderMenuOption.create(
             {
               orderMenuId: orderMenu.id,
@@ -628,6 +668,8 @@ exports.getCart = async (req, res, next) => {
     });
 
     if (!cart) createError('cart not found', 400);
+    if (cart.customerId !== req.user.id)
+      createError('Not allowed to view', 403);
 
     let cartSurface = await Order.findByPk(cartId);
     cartSurface = JSON.parse(JSON.stringify(cartSurface));

@@ -634,23 +634,4 @@ exports.pickDriver = async (req, res, next) => {
   }
 };
 
-exports.getDeliveryFee = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    if (!id) {
-      createError('order id are required', 400);
-    }
-    let order = await Order.findOne({
-      where: {
-        id,
-      },
-      attributes: ['deliveryFee'],
-    });
-
-    res.json({ deliveryFee: order });
-  } catch (err) {
-    next(err);
-  }
-};
-
 //

@@ -131,15 +131,13 @@ exports.addMenusToCart = async (req, res, next) => {
     const { menus } = req.body;
     const { cartId: orderId } = req.params;
     const existCart = await Order.findByPk(orderId, { transaction: t });
+
     if (!existCart) createError("cart doesn't exist", 400);
     if (existCart.status !== 'IN_CART')
       createError('The current entity is not a cart.', 400);
     const restaurantId = existCart.restaurantId;
 
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
-
-    console.log('menusssssssssssssssssssssssssss');
-    console.log(menus);
 
     for (let menu of menus) {
       const orderMenu = await OrderMenu.create(
@@ -187,6 +185,8 @@ exports.addMenusToCart = async (req, res, next) => {
     await t.commit();
 
     const cart = await Order.findByPk(orderId);
+
+    const orderMenu = await OrderMenu.findByPk();
 
     res.json({ message: 'successfully added menu to cart!' });
   } catch (error) {
@@ -445,14 +445,16 @@ exports.getMe = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
   try {
     const { firstName, lastName } = req.body;
-    const customer = req.user;
+    const customer = await Customer.findByPk(req.user.id);
 
     if (!customer) {
       createError('You are unauthorized', 400);
     }
 
+    console.log('imageFile', req.imageFile);
+
     // check if not have any data to update
-    if (Object.keys(req.body).length === 0 && !req.imageFile) {
+    if (!firstName && !lastName && !req.imageFile) {
       createError('You cannot update empty data', 400);
     }
 

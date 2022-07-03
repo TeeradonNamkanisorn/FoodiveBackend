@@ -24,6 +24,7 @@ const createError = require('../services/createError');
 const { destroy } = require('../utils/cloudinary');
 const { Op } = require('sequelize');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
+const clearFolder = require('../services/clearFolder');
 
 module.exports.createCart = async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -473,6 +474,8 @@ exports.updateProfile = async (req, res, next) => {
     res.json({ message: 'Update profile success' });
   } catch (err) {
     next(err);
+  } finally {
+    clearFolder('./public/images');
   }
 };
 

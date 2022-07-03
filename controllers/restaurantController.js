@@ -63,6 +63,8 @@ exports.updateRestaurant = async (req, res, next) => {
     res.json({ message: 'Update profile restaurant success.' });
   } catch (err) {
     next(err);
+  } finally {
+    clearFolder('./public/images');
   }
 };
 

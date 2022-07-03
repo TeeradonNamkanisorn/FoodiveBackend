@@ -617,6 +617,12 @@ exports.getAllRestaurantsOfCarts = async (req, res, next) => {
 exports.getCart = async (req, res, next) => {
   try {
     const { cartId } = req.params;
+    const customer = req.user;
+
+    if (!customer) {
+      createError('You are unauthorized', 400);
+    }
+
     const cart = await Order.findByPk(cartId, {
       include: {
         model: OrderMenu,
@@ -630,6 +636,12 @@ exports.getCart = async (req, res, next) => {
     });
 
     if (!cart) createError('cart not found', 400);
+
+    console.log(customer);
+
+    if (customer.id !== cart.customerId) {
+      createError('You are unauthorized', 400);
+    }
 
     let cartSurface = await Order.findByPk(cartId);
     cartSurface = JSON.parse(JSON.stringify(cartSurface));

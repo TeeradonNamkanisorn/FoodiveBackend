@@ -54,6 +54,7 @@ module.exports.createCart = async (req, res, next) => {
     //validating objecttttttttt
 
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
+    console.log(menus);
 
     for (let menu of menus) {
       const menuId = menu.id;
@@ -139,6 +140,7 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
+      console.log(menu.id);
       const orderMenu = await OrderMenu.create(
         {
           orderId,
@@ -182,8 +184,6 @@ exports.addMenusToCart = async (req, res, next) => {
     }
 
     await t.commit();
-
-    const cart = await Order.findByPk(orderId);
 
     res.json({ message: 'successfully added menu to cart!' });
   } catch (error) {
@@ -438,7 +438,7 @@ exports.getMe = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
   try {
     const { firstName, lastName } = req.body;
-    const customer = req.user;
+    const customer = await Customer.findByPk(req.user.id);
 
     if (!customer) {
       createError('You are unauthorized', 400);
@@ -712,106 +712,6 @@ exports.getMenuById = async (req, res, next) => {
 
     res.json({ menu });
   } catch (err) {
-    next(err);
-  }
-};
-
-module.exports.fillCart = async (req, res, next) => {
-  const t = await sequelize.transaction();
-  try {
-    const { orderId } = req.params;
-    let cart = await Order.findByPk(orderId, {
-      include: {
-        model: OrderMenu,
-        include: [
-          {
-            model: Menu,
-          },
-          {
-            model: OrderMenuOptionGroup,
-            include: [
-              {
-                model: MenuOptionGroup,
-              },
-              {
-                model: OrderMenuOption,
-                include: MenuOption,
-              },
-            ],
-          },
-        ],
-      },
-      where: {
-        status: 'IN_CART',
-      },
-      transaction: t,
-    });
-
-    if (cart.status !== 'IN_CART') {
-      createError("The entity you're trying to edit is not a cart");
-    }
-    for (let orderMenu of cart.OrderMenus) {
-      const newMenuPrice = orderMenu.Menu.price;
-      const newMenuName = orderMenu.Menu.name;
-      const menuId = orderMenu.Menu.id;
-
-      await OrderMenu.update(
-        { name: newMenuName, price: newMenuPrice },
-        {
-          where: {
-            menuId,
-          },
-          transaction: t,
-        },
-      );
-      for (let orderMenuOptionGroup of orderMenu.OrderMenuOptionGroups) {
-        const newGroupName = orderMenuOptionGroup.MenuOptionGroup.name;
-        const groupId = orderMenuOptionGroup.MenuOptionGroup.id;
-        await OrderMenuOptionGroup.update(
-          { name: newGroupName },
-          { where: { menuOptionGroupId: groupId }, transaction: t },
-        );
-
-        for (let orderMenuOption of orderMenuOptionGroup.OrderMenuOptions) {
-          const newOptionName = orderMenuOption.MenuOption.name;
-          const newOptionPrice = orderMenuOption.MenuOption.price;
-          const optionId = orderMenuOption.MenuOption.id;
-
-          await OrderMenuOption.update(
-            { name: newOptionName, price: newOptionPrice },
-            {
-              where: {
-                menuOptionId: optionId,
-              },
-              transaction: t,
-            },
-          );
-        }
-      }
-    }
-
-    cart = await Order.findByPk(orderId, {
-      include: {
-        model: OrderMenu,
-        include: [
-          {
-            model: OrderMenuOptionGroup,
-            include: [
-              {
-                model: OrderMenuOption,
-              },
-            ],
-          },
-        ],
-      },
-      transaction: t,
-    });
-
-    res.json({ cart });
-
-    await t.commit();
-  } catch (err) {
-    await t.rollback();
     next(err);
   }
 };

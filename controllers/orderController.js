@@ -9,6 +9,7 @@ const {
   MenuOptionGroup,
   MenuOption,
 } = require('../models');
+const { Op } = require('sequelize');
 
 module.exports.fillCart = async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -16,6 +17,7 @@ module.exports.fillCart = async (req, res, next) => {
     const { orderId } = req.params;
     const { latitude, longitude, address } = req.body;
     let totalPrice = 0;
+
     let cart = await Order.findByPk(orderId, {
       include: {
         model: OrderMenu,
@@ -43,9 +45,19 @@ module.exports.fillCart = async (req, res, next) => {
       transaction: t,
     });
 
-    if (cart.status !== 'IN_CART') {
-      createError("The entity you're trying to edit is not a cart");
-    }
+    const existPendingOrder = await Order.findOne({
+      where: {
+        status: {
+          [Op.or]: ['DELIVERY_PENDING', 'DRIVER_PENDING', 'RESTAURANT_PENDING'],
+        },
+        restaurantId: cart.restaurantId,
+      },
+    });
+
+    if (existPendingOrder)
+      createError(
+        'You already have an order in progress, please wait util the old order is delivered.',
+      );
 
     await Order.update(
       { address, customerLatitude: latitude, customerLongitude: longitude },

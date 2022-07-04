@@ -9,6 +9,7 @@ const {
 } = require('../models');
 const { Op, where, QueryTypes } = require('sequelize');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
+const clearFolder = require('../services/clearFolder');
 
 exports.getMe = async (req, res, next) => {
   try {
@@ -55,6 +56,8 @@ exports.updateProfile = async (req, res, next) => {
     res.json({ message: 'Update profile success.' });
   } catch (err) {
     next(err);
+  } finally {
+    clearFolder('./public/images');
   }
 };
 

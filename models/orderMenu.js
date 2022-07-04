@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       // Validate length later
       type: DataTypes.TEXT,
       validate: {
-        len: 50,
+        len: [0, 50],
       },
     },
   });

@@ -33,8 +33,8 @@ const order = [
     deliveryFee: '10',
     distance: '10',
     status: 'IN_CART',
-    customerLatitude: '100',
-    customerLongitude: '20',
+    customerLatitude: null,
+    customerLongitude: null,
     addressName: 'home',
     customerId: 2,
     driverId: 2,
@@ -408,15 +408,15 @@ const menuTags = [
 
 const categories = [
   {
-    name: 'category 1',
+    name: 'other',
     restaurantId: 1,
   },
   {
-    name: 'category 2',
+    name: 'other',
     restaurantId: 2,
   },
   {
-    name: 'category 3',
+    name: 'other',
     restaurantId: 3,
   },
 ];

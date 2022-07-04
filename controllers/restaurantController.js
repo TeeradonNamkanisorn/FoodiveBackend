@@ -21,8 +21,8 @@ const { destroy } = require('../utils/cloudinary');
 exports.getMe = async (req, res, next) => {
   try {
     const user = JSON.parse(JSON.stringify(req.user));
-    const restaurant = await Restaurant.findByPk(user.id);
-    res.json({ restaurant });
+    // const restaurant = await Restaurant.findByPk(user.id);
+    res.json({ user });
   } catch (err) {
     next(err);
   }
@@ -63,6 +63,8 @@ exports.updateRestaurant = async (req, res, next) => {
     res.json({ message: 'Update profile restaurant success.' });
   } catch (err) {
     next(err);
+  } finally {
+    clearFolder('./public/images');
   }
 };
 

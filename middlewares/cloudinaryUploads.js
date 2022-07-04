@@ -2,7 +2,6 @@ const cloudinary = require('../utils/cloudinary');
 
 const uploadImage = async (req, res, next) => {
   try {
-    console.log(req.file);
     if (req.file) {
       const imagePath = req.file?.path;
       console.log(imagePath);

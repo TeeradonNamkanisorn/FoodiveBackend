@@ -1,6 +1,7 @@
 const createError = require('../services/createError');
 const {
   sequelize,
+  Customer,
   Order,
   OrderMenu,
   OrderMenuOptionGroup,
@@ -149,14 +150,38 @@ exports.restaurantGetPendingOrders = async (req, res, next) => {
         status: 'RESTAURANT_PENDING',
         restaurantId: req.user.id,
       },
-      include: {
-        model: OrderMenu,
-        include: {
-          model: OrderMenuOptionGroup,
-          include: OrderMenuOption,
+      include: [
+        {
+          model: OrderMenu,
+          include: {
+            model: OrderMenuOptionGroup,
+            include: OrderMenuOption,
+          },
         },
-      },
+        {
+          model: Customer,
+          attributes: ['firstName', 'lastName', 'phoneNumber'],
+        },
+      ],
     });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.restaurantUpdateOrder = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const order = await Order.findByPk(orderId);
+
+    if (order.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant');
+    }
+
+    await Order.update({ status }, { where: { id: orderId } });
 
     res.json({ order });
   } catch (err) {

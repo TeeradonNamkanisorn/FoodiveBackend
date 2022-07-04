@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         'DRIVER_PENDING',
         'DELIVERY_PENDING',
         'DELIVERED',
-        'CANCLED',
+        'CANCELLED',
       ),
       defaultValue: 'IN_CART',
     },

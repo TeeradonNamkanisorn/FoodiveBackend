@@ -126,6 +126,9 @@ exports.searchOrder = async (req, res, next) => {
   try {
     const { latitude, longitude } = req.body;
     let order = await Order.findAll({
+      where: {
+        status: 'DRIVER_PENDING',
+      },
       include: [
         {
           model: Restaurant,

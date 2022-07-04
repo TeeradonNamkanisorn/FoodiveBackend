@@ -1,6 +1,7 @@
 const createError = require('../services/createError');
 const {
   sequelize,
+  Driver,
   Customer,
   Order,
   OrderMenu,
@@ -127,6 +128,43 @@ module.exports.fillCart = async (req, res, next) => {
     await t.commit();
   } catch (err) {
     await t.rollback();
+    next(err);
+  }
+};
+
+exports.getDeliveryPendingByRestaurant = async (req, res, next) => {
+  try {
+    const order = await Order.findAll({
+      where: {
+        status: 'DELIVERY_PENDING',
+        restaurantId: req.user.id,
+      },
+      include: [
+        {
+          model: OrderMenu,
+          include: {
+            model: OrderMenuOptionGroup,
+            include: OrderMenuOption,
+          },
+          include: {
+            model: Menu,
+            attributes: ['menuImage'],
+          },
+        },
+        {
+          model: Customer,
+          attributes: ['firstName', 'lastName', 'phoneNumber'],
+        },
+        {
+          model: Driver,
+          attributes: ['firstName', 'lastName', 'phoneNumber'],
+        },
+      ],
+      order: [['updatedAt', 'DESC']],
+    });
+
+    res.json({ order });
+  } catch (err) {
     next(err);
   }
 };

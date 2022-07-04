@@ -32,4 +32,5 @@ router.post(
   orderController.fillCart,
 );
 
+router.get('/resmenu/:id', customerController.searchMenuInRestaurant);
 module.exports = router;

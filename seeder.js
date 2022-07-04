@@ -44,14 +44,14 @@ const order = [
 
 const orderMenu = [
   {
-    price: 10.0,
+    price: 22.0,
     name: 'pad thai',
     comment: 'comment pad thai',
     orderId: 1,
     menuId: 1,
   },
   {
-    price: 12.0,
+    price: 32.0,
     name: 'thai green curry',
     comment: 'comment thai green curry',
     orderId: 1,
@@ -220,7 +220,7 @@ const restaurants = [
 const menus = [
   {
     name: 'pad thai',
-    price: 10,
+    price: 22,
     menuImage:
       'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Phat_Thai_kung_Chang_Khien_street_stall.jpg/1200px-Phat_Thai_kung_Chang_Khien_street_stall.jpg',
     menuImagePublicId: 'none',
@@ -230,7 +230,7 @@ const menus = [
   },
   {
     name: 'thai tea',
-    price: 10,
+    price: 40,
     menuImage:
       'https://www.honestfoodtalks.com/wp-content/uploads/2021/11/iced-thai-tea-with-white-straw-1.jpg',
     menuImagePublicId: 'none',
@@ -240,7 +240,7 @@ const menus = [
   },
   {
     name: 'thai green curry',
-    price: 12,
+    price: 32,
     menuImage:
       'https://www.recipetineats.com/wp-content/uploads/2019/02/Thai-Green-Curry_5.jpg',
     menuImagePublicId: 'none',
@@ -250,7 +250,7 @@ const menus = [
   },
   {
     name: 'croissant',
-    price: 5,
+    price: 35,
     menuImage:
       'https://img.freepik.com/free-photo/croissants-wooden-cutting-board_1150-28480.jpg?w=2000',
     menuImagePublicId: 'none',
@@ -260,7 +260,7 @@ const menus = [
   },
   {
     name: 'Andre',
-    price: 10,
+    price: 55,
     menuImage:
       'https://img.restaurantguru.com/rf60-Andre-restaurant-seafood.jpg',
     menuImagePublicId: 'none',
@@ -270,7 +270,7 @@ const menus = [
   },
   {
     name: 'Flamiche',
-    price: 15,
+    price: 34,
     menuImage:
       'https://upload.wikimedia.org/wikipedia/commons/a/a9/Tarte_Flamiche.jpg',
     menuImagePublicId: 'none',
@@ -280,7 +280,7 @@ const menus = [
   },
   {
     name: 'Peking Roasted Duck',
-    price: 15,
+    price: 65,
     menuImage:
       'https://redhousespice.com/wp-content/uploads/2022/01/sliced-peking-duck-with-pancakes-scaled.jpg',
     menuImagePublicId: 'none',
@@ -290,7 +290,7 @@ const menus = [
   },
   {
     name: 'Kung Pao Chicken',
-    price: 15,
+    price: 70,
     menuImage:
       'https://cafedelites.com/wp-content/uploads/2018/04/Best-Kung-Pao-Chicken-IMAGE-2.jpg',
     description:
@@ -301,7 +301,7 @@ const menus = [
   },
   {
     name: 'Chineses Dumplings',
-    price: 15,
+    price: 80,
     menuImage:
       'https://images-gmi-pmc.edge-generalmills.com/c1517889-0f2c-4de2-895a-69dbc16cd9d9.jpg',
     description: 'dumplings',

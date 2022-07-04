@@ -225,3 +225,22 @@ exports.deliveredStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getDeliveryFee = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    let order = await Order.findOne({
+      where: {
+        id,
+      },
+      attributes: ['deliveryFee'],
+    });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};

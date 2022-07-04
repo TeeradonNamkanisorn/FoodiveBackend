@@ -122,3 +122,25 @@ module.exports.fillCart = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.restaurantGetPendingOrders = async (req, res, next) => {
+  try {
+    const order = await Order.findAll({
+      where: {
+        status: 'RESTAURANT_PENDING',
+        restaurantId: req.user.id,
+      },
+      include: {
+        model: OrderMenu,
+        include: {
+          model: OrderMenuOptionGroup,
+          include: OrderMenuOption,
+        },
+      },
+    });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};

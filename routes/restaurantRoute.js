@@ -2,6 +2,7 @@ const multer = require('../middlewares/upload');
 
 const router = require('express').Router();
 const restaurantController = require('../controllers/restaurantController');
+const orderController = require('../controllers/orderController');
 const { uploadImage } = require('../middlewares/cloudinaryUploads');
 
 router.get('/getMe', restaurantController.getMe);
@@ -50,6 +51,7 @@ router.put(
 router.post('/assign-tags', restaurantController.assignTags);
 router.put('/change-tags', restaurantController.changeTags);
 router.get('/pickDriver', restaurantController.pickDriver);
+router.get('/pendingOrders', orderController.restaurantGetPendingOrders);
 
 module.exports = router;
 //

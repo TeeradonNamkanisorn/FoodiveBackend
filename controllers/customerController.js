@@ -133,6 +133,7 @@ exports.addMenusToCart = async (req, res, next) => {
     const { menus } = req.body;
     const { cartId: orderId } = req.params;
     const existCart = await Order.findByPk(orderId, { transaction: t });
+
     if (!existCart) createError("cart doesn't exist", 400);
     if (existCart.status !== 'IN_CART')
       createError('The current entity is not a cart.', 400);
@@ -141,7 +142,6 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
-      console.log(menu.id);
       const orderMenu = await OrderMenu.create(
         {
           orderId,
@@ -186,7 +186,10 @@ exports.addMenusToCart = async (req, res, next) => {
 
     await t.commit();
 
-    res.json({ message: 'successfully added menu to cart!' });
+    res.json({
+      message: 'successfully added menu to cart!',
+      cart: { id: existCart.id },
+    });
   } catch (error) {
     await t.rollback();
     next(error);
@@ -196,9 +199,13 @@ exports.addMenusToCart = async (req, res, next) => {
 exports.removeMenu = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const { orderMenuId } = req.body;
+    const { orderMenuId } = req.params;
+
+    console.log('orderMenuId', orderMenuId);
 
     const orderMenu = await OrderMenu.findByPk(orderMenuId, { transaction: t });
+
+    console.log('orderMenu', orderMenu);
 
     const orderMenuOptionGroups = await OrderMenuOptionGroup.findAll({
       where: {
@@ -446,7 +453,7 @@ exports.updateProfile = async (req, res, next) => {
     }
 
     // check if not have any data to update
-    if (Object.keys(req.body).length === 0 && !req.imageFile) {
+    if (!firstName && !lastName && !req.imageFile) {
       createError('You cannot update empty data', 400);
     }
 
@@ -658,6 +665,12 @@ exports.getAllRestaurantsOfCarts = async (req, res, next) => {
 exports.getCart = async (req, res, next) => {
   try {
     const { cartId } = req.params;
+    const customer = req.user;
+
+    if (!customer) {
+      createError('You are unauthorized', 400);
+    }
+
     const cart = await Order.findByPk(cartId, {
       include: {
         model: OrderMenu,
@@ -673,6 +686,12 @@ exports.getCart = async (req, res, next) => {
     if (!cart) createError('cart not found', 400);
     if (cart.customerId !== req.user.id)
       createError('Not allowed to view', 403);
+
+    console.log(customer);
+
+    if (customer.id !== cart.customerId) {
+      createError('You are unauthorized', 400);
+    }
 
     let cartSurface = await Order.findByPk(cartId);
     cartSurface = JSON.parse(JSON.stringify(cartSurface));

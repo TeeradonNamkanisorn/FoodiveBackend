@@ -4,8 +4,8 @@ const { uploadImage } = require('../middlewares/cloudinaryUploads');
 const driverController = require('../controllers/driverController');
 
 router.get('/getMe', driverController.getMe);
-router.patch(
-  '/updateProfile',
+router.put(
+  '/update',
   multer.single('driverImage'),
   uploadImage,
   driverController.updateProfile,

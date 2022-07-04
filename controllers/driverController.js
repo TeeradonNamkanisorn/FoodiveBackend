@@ -146,7 +146,7 @@ exports.searchOrder = async (req, res, next) => {
         longitude,
         element.Restaurant.latitude,
         element.Restaurant.longitude,
-      ) <= 10
+      ) <= 20
         ? orderArr.push(element)
         : '';
     });

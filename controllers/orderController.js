@@ -48,7 +48,7 @@ module.exports.fillCart = async (req, res, next) => {
     }
 
     await Order.update(
-      { address, latitude, longitude },
+      { address, customerLatitude: latitude, customerLongitude: longitude },
       { where: { id: orderId }, transaction: t },
     );
 
@@ -93,7 +93,14 @@ module.exports.fillCart = async (req, res, next) => {
     }
 
     await Order.update(
-      { price: totalPrice, status: 'RESTAURANT_PENDING' },
+      {
+        price: totalPrice,
+        status: 'RESTAURANT_PENDING',
+        address,
+        customerLatitude: latitude,
+        customerLongitude: longitude,
+        addressName: address,
+      },
       { where: { id: orderId }, transaction: t },
     );
 

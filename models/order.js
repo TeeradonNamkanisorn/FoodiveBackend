@@ -20,6 +20,8 @@ module.exports = (sequelize, DataTypes) => {
         'RESTAURANT_PENDING',
         'DELIVERY_PENDING',
         'DELIVERED',
+        'CANCELLED',
+        'DRIVER_PENDING'
       ),
       defaultValue: 'IN_CART',
     },

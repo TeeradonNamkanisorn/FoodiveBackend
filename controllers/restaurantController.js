@@ -28,6 +28,52 @@ exports.getMe = async (req, res, next) => {
   }
 };
 
+exports.getAllCategoryFromRestaurantId = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const category = await Category.findAll({
+      where: {
+        restaurantId: id,
+      },
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json({ category });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCategoryById = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+
+    const category = await Category.findOne({
+      where: {
+        id: categoryId,
+      },
+      include: [
+        {
+          model: Menu,
+          include: [{ model: MenuOptionGroup, include: [MenuOption] }],
+        },
+      ],
+    });
+
+    // const menu = await Menu.findAll({
+    //   where: {
+    //     categoryId,
+    //   },
+    //   order: [['createdAt', 'DESC']],
+    //   include: [{ model: MenuOptionGroup, include: [MenuOption] }],
+    // });
+
+    res.json({ category });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.updateRestaurant = async (req, res, next) => {
   try {
     // UPDATE : name , image

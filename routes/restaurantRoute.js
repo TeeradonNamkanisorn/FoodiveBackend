@@ -6,6 +6,13 @@ const { uploadImage } = require('../middlewares/cloudinaryUploads');
 
 router.get('/getMe', restaurantController.getMe);
 
+router.get(
+  '/getAllCategory',
+  restaurantController.getAllCategoryFromRestaurantId,
+);
+
+router.get('/getCategory/:categoryId', restaurantController.getCategoryById);
+
 router.patch(
   '/update',
   multer.single('image'),

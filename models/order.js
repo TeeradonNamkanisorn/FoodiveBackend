@@ -18,8 +18,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM(
         'IN_CART',
         'RESTAURANT_PENDING',
+        'DRIVER_PENDING',
         'DELIVERY_PENDING',
         'DELIVERED',
+        'CANCELLED',
       ),
       defaultValue: 'IN_CART',
     },

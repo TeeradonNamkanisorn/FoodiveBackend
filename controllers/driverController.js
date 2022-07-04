@@ -66,12 +66,18 @@ exports.updateStatus = async (req, res, next) => {
     const driver = await Driver.findByPk(req.user.id);
     const { status } = req.body;
 
+    console.log('statue', status);
+
     if (!driver) {
       createError('You are unauthorize.', 400);
     }
 
-    if (status !== 'UNAVAILABLE' && status !== 'AVAILABLE') {
-      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE'", 400);
+    if (
+      status !== 'UNAVAILABLE' &&
+      status !== 'AVAILABLE' &&
+      status !== 'BUSY'
+    ) {
+      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE' or 'BUSY'", 400);
     }
 
     if (driver.status === status) {

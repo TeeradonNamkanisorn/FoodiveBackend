@@ -31,6 +31,7 @@ router.post(
   omiseController.chargeCustomer,
   orderController.fillCart,
 );
+router.get('/currentOrder', orderController.customerGetCurrentPendingOrder);
 
 router.get('/resmenu/:id', customerController.searchMenuInRestaurant);
 module.exports = router;

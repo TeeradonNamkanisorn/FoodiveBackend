@@ -208,7 +208,10 @@ exports.deliveringStatus = async (req, res, next) => {
     if (!id) {
       createError('order id are required', 400);
     }
-    await Order.update({ status: 'DELIVERY_PENDING' }, { where: { id } });
+    await Order.update(
+      { status: 'DELIVERY_PENDING', driverId },
+      { where: { id } },
+    );
 
     res.json({
       message: `orderId : ${id} status : ${'DELIVERY_PENDING'} by driverId : ${driverId}`,
@@ -247,6 +250,27 @@ exports.getDeliveryFee = async (req, res, next) => {
       },
       attributes: ['deliveryFee'],
     });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCurrentOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        driverId: req.user.id,
+        status: 'DELIVERY_PENDING',
+      },
+      include: {
+        model: Customer,
+        attributes: ['firstName', 'lastName', 'phoneNumber', 'profileImage'],
+      },
+    });
+
+    console.log(req.user.id);
 
     res.json({ order });
   } catch (err) {

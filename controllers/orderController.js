@@ -3,6 +3,7 @@ const {
   sequelize,
   Customer,
   Order,
+  Driver,
   OrderMenu,
   OrderMenuOptionGroup,
   OrderMenuOption,
@@ -182,6 +183,25 @@ exports.restaurantUpdateOrder = async (req, res, next) => {
     }
 
     await Order.update({ status }, { where: { id: orderId } });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.customerGetCurrentPendingOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        status: 'DELIVERY_PENDING',
+        customerId: req.user.id,
+      },
+      include: {
+        model: Driver,
+        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
+      },
+    });
 
     res.json({ order });
   } catch (err) {

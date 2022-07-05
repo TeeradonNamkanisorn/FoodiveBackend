@@ -587,6 +587,7 @@ exports.getAllRestaurant = async (req, res, next) => {
 exports.getRestaurantById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { latitude, longitude } = req.body;
 
     const restaurant = await Restaurant.findByPk(id, {
       include: {
@@ -603,7 +604,16 @@ exports.getRestaurantById = async (req, res, next) => {
       },
     });
 
-    res.json({ restaurant });
+    const distance = getDistanceFromLatLonInKm(
+      restaurant.latitude,
+      restaurant.longitude,
+      latitude,
+      longitude,
+    );
+
+    console.log('restaurantsWithDistance : ', distance);
+
+    res.json({ distance, restaurant });
   } catch (error) {
     next(error);
   }

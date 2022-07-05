@@ -1,7 +1,6 @@
 const createError = require('../services/createError');
 const {
   sequelize,
-  Driver,
   Customer,
   Order,
   Driver,

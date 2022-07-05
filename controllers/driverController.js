@@ -5,6 +5,7 @@ const {
   Order,
   Restaurant,
   sequelize,
+  Customer,
   OrderMenu,
 } = require('../models');
 const { Op, where, QueryTypes } = require('sequelize');

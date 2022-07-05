@@ -16,87 +16,202 @@ const {
 } = require('./models');
 
 const order = [
-  {
-    price: 22,
-    deliveryFee: 10,
-    distance: 10,
-    status: 'DELIVERY_PENDING',
-    customerLatitude: 14,
-    customerLongitude: 100.5,
-    addressName: 'home',
-    customerId: 1,
-    driverId: 1,
-    restaurantId: 1,
-  },
-  {
-    price: null,
-    deliveryFee: '10',
-    distance: '10',
-    status: 'IN_CART',
-    customerLatitude: null,
-    customerLongitude: null,
-    addressName: 'home',
-    customerId: 2,
-    driverId: 2,
-    restaurantId: 2,
-  },
+  // {
+  //   price: 22,
+  //   deliveryFee: 10,
+  //   distance: 10,
+  //   status: 'DELIVERY_PENDING',
+  //   customerLatitude: '13.734879475073363',
+  //   customerLongitude: '100.52830535401003',
+  //   addressName: 'home',
+  //   customerId: 1,
+  //   driverId: 1,
+  //   restaurantId: 1,
+  // },
+  // {
+  //   price: null,
+  //   deliveryFee: 10,
+  //   distance: 10,
+  //   status: 'IN_CART',
+  //   customerLatitude: null,
+  //   customerLongitude: null,
+  //   addressName: 'home',
+  //   customerId: 2,
+  //   driverId: 2,
+  //   restaurantId: 2,
+  // },
+  // {
+  //   price: 302,
+  //   deliveryFee: 33,
+  //   distance: 10,
+  //   status: 'DRIVER_PENDING',
+  //   customerLatitude: '13.734879475073363',
+  //   customerLongitude: '100.52830535401003',
+  //   addressName: 'home',
+  //   customerId: 1,
+  //   driverId: 2,
+  //   restaurantId: 2,
+  // },
+  // {
+  //   price: 156,
+  //   deliveryFee: 26,
+  //   distance: 10,
+  //   status: 'DELIVERED',
+  //   customerLatitude: '13.734879475073363',
+  //   customerLongitude: '100.52830535401003',
+  //   addressName: 'home',
+  //   customerId: 3,
+  //   driverId: 1,
+  //   restaurantId: 1,
+  // },
+  // {
+  //   price: 220,
+  //   deliveryFee: 60,
+  //   distance: 10,
+  //   status: 'RESTAURANT_PENDING',
+  //   customerLatitude: '13.734879475073363',
+  //   customerLongitude: '100.52830535401003',
+  //   addressName: 'home',
+  //   customerId: 4,
+  //   driverId: 1,
+  //   restaurantId: 1,
+  // },
+  // {
+  //   price: 430,
+  //   deliveryFee: 43,
+  //   distance: 10,
+  //   status: 'RESTAURANT_PENDING',
+  //   customerLatitude: '13.734879475073363',
+  //   customerLongitude: '100.52830535401003',
+  //   addressName: 'home',
+  //   customerId: 3,
+  //   driverId: 2,
+  //   restaurantId: 3,
+  // },
+  // {
+  //   price: 423,
+  //   deliveryFee: '30',
+  //   distance: '10',
+  //   status: 'DRIVER_PENDING',
+  //   customerLatitude: '13.76203556569543',
+  //   customerLongitude: '300',
+  //   addressName: 'home',
+  //   customerId: '2',
+  //   driverId: '2',
+  //   restaurantId: '2',
+  // },
+  // {
+  //   price: '332',
+  //   deliveryFee: '10',
+  //   distance: '10',
+  //   status: 'DELIVERY_PENDING',
+  //   customerLatitude: '13.76203556569543',
+  //   customerLongitude: '300',
+  //   addressName: 'home',
+  //   customerId: '2',
+  //   driverId: '2',
+  //   restaurantId: '2',
+  // },
+  // {
+  //   price: '332',
+  //   deliveryFee: '22',
+  //   distance: '10',
+  //   status: 'DELIVERED',
+  //   customerLatitude: '13.76203556569543',
+  //   customerLongitude: '300',
+  //   addressName: 'home',
+  //   customerId: '2',
+  //   driverId: '1',
+  //   restaurantId: '2',
+  // },
 ];
 
 const orderMenu = [
-  {
-    price: 10.0,
-    name: 'pad thai',
-    comment: 'comment pad thai',
-    orderId: 1,
-    menuId: 1,
-  },
-  {
-    price: 12.0,
-    name: 'thai green curry',
-    comment: 'comment thai green curry',
-    orderId: 1,
-    menuId: 3,
-  },
-  {
-    // price: null,
-    // name: null,
-    comment: 'comment croissant',
-    orderId: 2,
-    menuId: 4,
-  },
-  {
-    // price: null,
-    // name: null,
-    comment: 'comment Andre',
-    orderId: 2,
-    menuId: 5,
-  },
+  // {
+  //   price: 22,
+  //   name: 'pad thai',
+  //   comment: 'comment pad thai',
+  //   orderId: 1,
+  //   menuId: 1,
+  // },
+  // {
+  //   price: 32,
+  //   name: 'thai green curry',
+  //   comment: 'comment thai green curry',
+  //   orderId: 1,
+  //   menuId: 3,
+  // },
+  // {
+  //   comment: 'comment croissant',
+  //   orderId: 2,
+  //   menuId: 4,
+  // },
+  // {
+  //   comment: 'comment Andre',
+  //   orderId: 2,
+  //   menuId: 5,
+  // },
+  // {
+  //   price: 22,
+  //   name: 'pad thai',
+  //   comment: 'comment pad thai',
+  //   orderId: 5,
+  //   menuId: 1,
+  // },
+  // {
+  //   price: 32,
+  //   name: 'thai green curry',
+  //   comment: 'comment thai green curry',
+  //   orderId: 5,
+  //   menuId: 3,
+  // },
+  // {
+  //   price: 22,
+  //   name: 'pad thai',
+  //   comment: 'comment pad thai',
+  //   orderId: 6,
+  //   menuId: 1,
+  // },
+  // {
+  //   price: 32,
+  //   name: 'thai green curry',
+  //   comment: 'comment thai green curry',
+  //   orderId: 6,
+  //   menuId: 3,
+  // },
+  // {
+  //   price: 32,
+  //   name: 'thai green curry',
+  //   comment: 'comment thai green curry',
+  //   orderId: 7,
+  //   menuId: 3,
+  // },
 ];
 
 const orderMenuOptionGroup = [
-  {
-    orderMenuId: 1,
-    menuOptionGroupId: 1,
-  },
-  {
-    orderMenuId: 3,
-    menuOptionGroupId: 2,
-  },
+  // {
+  //   orderMenuId: 1,
+  //   menuOptionGroupId: 1,
+  // },
+  // {
+  //   orderMenuId: 3,
+  //   menuOptionGroupId: 2,
+  // },
 ];
 
 const orderMenuOption = [
-  {
-    orderMenuOptionGroupId: 1,
-    menuOptionId: 1,
-  },
+  // {
+  //   orderMenuOptionGroupId: 1,
+  //   menuOptionId: 1,
+  // },
   // {
   //   orderMenuOptionGroupId: '1',
   //   menuOptionId: '2',
   // },
-  {
-    orderMenuOptionGroupId: 2,
-    menuOptionId: 4,
-  },
+  // {
+  //   orderMenuOptionGroupId: 2,
+  //   menuOptionId: 4,
+  // },
   // {
   //   orderMenuOptionGroupId: '2',
   //   menuOptionId: '5',
@@ -127,6 +242,8 @@ const customers = [
     firstName: 'theme',
     lastName: 'namkanisorn',
     phoneNumber: '0922798232',
+    profileImage: 'https://commons.wikimedia.org/wiki/File:Mr._Smiley_Face.svg',
+    profileImagePublicId: 'none',
   },
   {
     email: 'johnDoe@gmail.com',
@@ -134,6 +251,9 @@ const customers = [
     firstName: 'john',
     lastName: 'doe',
     phoneNumber: '0922798233',
+    profileImage:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/800px-SNice.svg.png',
+    profileImagePublicId: 'none',
   },
   {
     email: 'bob@gmail.com',
@@ -141,6 +261,8 @@ const customers = [
     firstName: 'TN',
     lastName: 'bob',
     phoneNumber: '0922798234',
+    profileImage: 'https://miro.medium.com/max/460/0*9HT1OYr0CFqjBDNT.',
+    profileImagePublicId: 'none',
   },
   {
     email: 'cat@gmail.com',
@@ -148,6 +270,9 @@ const customers = [
     firstName: 'cat',
     lastName: 'catty',
     phoneNumber: '0922798235',
+    profileImage:
+      'https://magnifiedtech.com/wp-content/uploads/2022/02/What-Android-App-Has-a-Smiley-Face-Notification-1.webp',
+    profileImagePublicId: 'none',
   },
 ];
 
@@ -160,6 +285,9 @@ const drivers = [
     phoneNumber: '0922998800',
     latitude: 13.744573458078486,
     longitude: 100.52333650466416,
+    driverImage:
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJMcbhvP9CrmDfXODm6xhHl-OUTVVIdzRaCA&usqp=CAU',
+    driverImagePublicId: 'none',
   },
   {
     email: 'Doggy@gmail.com',
@@ -169,6 +297,7 @@ const drivers = [
     phoneNumber: '0822998039',
     latitude: 13.744573458078486,
     longitude: 100.52333650466416,
+    driverImage: 'https://images.emojiterra.com/twitter/512px/1f92e.png',
   },
   {
     email: 'Fox@gmail.com',
@@ -209,7 +338,7 @@ const restaurants = [
     password: '$2a$10$6VVLjzxhP7r9OtL7FpG/Auhn6PYwyoOeULtZLZGnW..qYqE8WmcZa',
     name: 'Chinese Restaurant',
     phoneNumber: '0822224444',
-    latitude: 101,
+    latitude: 13.753253,
     longitude: 101,
     image:
       'https://media-cdn.tripadvisor.com/media/photo-s/07/06/10/f7/ming-palace-chinese-restaurant.jpg',
@@ -220,7 +349,7 @@ const restaurants = [
 const menus = [
   {
     name: 'pad thai',
-    price: 10,
+    price: 22,
     menuImage:
       'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Phat_Thai_kung_Chang_Khien_street_stall.jpg/1200px-Phat_Thai_kung_Chang_Khien_street_stall.jpg',
     menuImagePublicId: 'none',
@@ -230,7 +359,7 @@ const menus = [
   },
   {
     name: 'thai tea',
-    price: 10,
+    price: 40,
     menuImage:
       'https://www.honestfoodtalks.com/wp-content/uploads/2021/11/iced-thai-tea-with-white-straw-1.jpg',
     menuImagePublicId: 'none',
@@ -240,7 +369,7 @@ const menus = [
   },
   {
     name: 'thai green curry',
-    price: 12,
+    price: 32,
     menuImage:
       'https://www.recipetineats.com/wp-content/uploads/2019/02/Thai-Green-Curry_5.jpg',
     menuImagePublicId: 'none',
@@ -250,7 +379,7 @@ const menus = [
   },
   {
     name: 'croissant',
-    price: 5,
+    price: 35,
     menuImage:
       'https://img.freepik.com/free-photo/croissants-wooden-cutting-board_1150-28480.jpg?w=2000',
     menuImagePublicId: 'none',
@@ -260,7 +389,7 @@ const menus = [
   },
   {
     name: 'Andre',
-    price: 10,
+    price: 55,
     menuImage:
       'https://img.restaurantguru.com/rf60-Andre-restaurant-seafood.jpg',
     menuImagePublicId: 'none',
@@ -270,7 +399,7 @@ const menus = [
   },
   {
     name: 'Flamiche',
-    price: 15,
+    price: 34,
     menuImage:
       'https://upload.wikimedia.org/wikipedia/commons/a/a9/Tarte_Flamiche.jpg',
     menuImagePublicId: 'none',
@@ -280,7 +409,7 @@ const menus = [
   },
   {
     name: 'Peking Roasted Duck',
-    price: 15,
+    price: 65,
     menuImage:
       'https://redhousespice.com/wp-content/uploads/2022/01/sliced-peking-duck-with-pancakes-scaled.jpg',
     menuImagePublicId: 'none',
@@ -290,7 +419,7 @@ const menus = [
   },
   {
     name: 'Kung Pao Chicken',
-    price: 15,
+    price: 70,
     menuImage:
       'https://cafedelites.com/wp-content/uploads/2018/04/Best-Kung-Pao-Chicken-IMAGE-2.jpg',
     description:
@@ -301,7 +430,7 @@ const menus = [
   },
   {
     name: 'Chineses Dumplings',
-    price: 15,
+    price: 80,
     menuImage:
       'https://images-gmi-pmc.edge-generalmills.com/c1517889-0f2c-4de2-895a-69dbc16cd9d9.jpg',
     description: 'dumplings',

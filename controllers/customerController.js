@@ -142,7 +142,6 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
-      console.log(menu.id);
       const orderMenu = await OrderMenu.create(
         {
           orderId,
@@ -187,7 +186,10 @@ exports.addMenusToCart = async (req, res, next) => {
 
     await t.commit();
 
-    res.json({ message: 'successfully added menu to cart!' });
+    res.json({
+      message: 'successfully added menu to cart!',
+      cart: { id: existCart.id },
+    });
   } catch (error) {
     await t.rollback();
     next(error);

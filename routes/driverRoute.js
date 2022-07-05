@@ -20,5 +20,6 @@ router.get('/getIncome', driverController.getIncome);
 router.post('/orderAccepted/:id', driverController.acceptOrder);
 router.post('/deliveringStatus/:id', driverController.deliveringStatus);
 router.post('/deliveredStatus/:id', driverController.deliveredStatus);
-
+router.get('/getFee/:id', driverController.getDeliveryFee);
+router.get('/currentOrder', driverController.getCurrentOrder);
 module.exports = router;

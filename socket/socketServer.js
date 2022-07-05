@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const getDistanceFromLatLonInKm = require('../services/calcDistance');
 const io = new Server({
   cors: {
     origin: '*',
@@ -56,6 +57,44 @@ io.on('connection', (socket) => {
     findAndDeleteUserFromSocketId(socket.id);
     console.log(onlineUsers);
   });
+
+  socket.on('forceDisconnect', () => {
+    findAndDeleteUserFromSocketId(socket.id);
+    console.log('manual disconnect');
+    console.log(onlineUsers);
+    socket.disconnect();
+  });
+
+  socket.on(
+    'restaurantAccept',
+    ({ restaurantLatitude, restaurantLongitude }) => {
+      try {
+        let availableDrivers = onlineUsers.drivers;
+        availableDrivers = availableDrivers.filter(
+          availableDrivers.latitude !== null,
+        );
+
+        availableDrivers.filter((driver) => {
+          const distance = getDistanceFromLatLonInKm(
+            restaurantLatitude,
+            restaurantLongitude,
+            driver.latitude,
+            driver.longitude,
+          );
+          return distance <= 20;
+        });
+
+        const socketIds = availableDrivers.map((driver) => driver.socketId);
+        for (let i = 0; i < socketIds.length; i++) {
+          io.to(socketIds[i]).emit('incomingOrder', {
+            message: 'You have an incoming order',
+          });
+        }
+      } catch (err) {
+        io.to(socket.id).emit('error', { message: err.message });
+      }
+    },
+  );
 
   socket.on('notifyRestaurant', (payload) => {
     try {

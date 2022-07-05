@@ -5,6 +5,7 @@ const {
   Order,
   Restaurant,
   sequelize,
+  Customer,
   OrderMenu,
 } = require('../models');
 const { Op, where, QueryTypes } = require('sequelize');
@@ -132,6 +133,9 @@ exports.searchOrder = async (req, res, next) => {
   try {
     const { latitude, longitude } = req.body;
     let order = await Order.findAll({
+      where: {
+        status: 'DRIVER_PENDING',
+      },
       include: [
         {
           model: Restaurant,
@@ -205,7 +209,10 @@ exports.deliveringStatus = async (req, res, next) => {
     if (!id) {
       createError('order id are required', 400);
     }
-    await Order.update({ status: 'DELIVERY_PENDING' }, { where: { id } });
+    await Order.update(
+      { status: 'DELIVERY_PENDING', driverId },
+      { where: { id } },
+    );
 
     res.json({
       message: `orderId : ${id} status : ${'DELIVERY_PENDING'} by driverId : ${driverId}`,
@@ -227,6 +234,46 @@ exports.deliveredStatus = async (req, res, next) => {
     res.json({
       message: `orderId : ${id} status : ${'DELIVERED'} by driverId : ${driverId}`,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDeliveryFee = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    let order = await Order.findOne({
+      where: {
+        id,
+      },
+      attributes: ['deliveryFee'],
+    });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCurrentOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        driverId: req.user.id,
+        status: 'DELIVERY_PENDING',
+      },
+      include: {
+        model: Customer,
+        attributes: ['firstName', 'lastName', 'phoneNumber', 'profileImage'],
+      },
+    });
+
+    console.log(req.user.id);
+
+    res.json({ order });
   } catch (err) {
     next(err);
   }

@@ -227,21 +227,6 @@ exports.restaurantUpdateOrder = async (req, res, next) => {
   }
 };
 
-exports.customerGetCurrentPendingOrder = async (req, res, next) => {
-  try {
-    const order = await Order.findOne({
-      where: {
-        status: 'DELIVERY_PENDING',
-        customerId: req.user.id,
-      },
-      include: {
-        model: Driver,
-        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
-      },
-    });
-
-    res.json({ order });
-  } catch (err) {
 exports.deleteMenu = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
@@ -311,6 +296,25 @@ exports.deleteMenu = async (req, res, next) => {
     res.sendStatus(204);
   } catch (err) {
     await t.rollback();
+    next(err);
+  }
+};
+
+exports.customerGetCurrentPendingOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        status: 'DELIVERY_PENDING',
+        customerId: req.user.id,
+      },
+      include: {
+        model: Driver,
+        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
+      },
+    });
+
+    res.json({ order });
+  } catch (err) {
     next(err);
   }
 };

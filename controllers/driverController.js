@@ -6,6 +6,7 @@ const {
   Restaurant,
   sequelize,
   OrderMenu,
+  Menu,
 } = require('../models');
 const { Op, where, QueryTypes } = require('sequelize');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
@@ -128,6 +129,7 @@ exports.searchOrder = async (req, res, next) => {
     let order = await Order.findAll({
       where: {
         status: 'DRIVER_PENDING',
+        driverId: null,
       },
       include: [
         {
@@ -164,6 +166,40 @@ exports.getOrderById = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const order = await Order.findByPk(orderId);
+
+    if (order.status === 'IN_CART')
+      createError('You cannot view this resource', 400);
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getOrderDetailById = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const order = await Order.findOne({
+      where: {
+        id: orderId,
+      },
+      include: [
+        {
+          model: Restaurant,
+          attributes: {
+            exclude: ['password'],
+          },
+        },
+        {
+          model: OrderMenu,
+          include: [
+            {
+              model: Menu,
+            },
+          ],
+        },
+      ],
+    });
 
     if (order.status === 'IN_CART')
       createError('You cannot view this resource', 400);

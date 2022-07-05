@@ -49,7 +49,7 @@ const order = [
     customerLongitude: '100.52830535401003',
     addressName: 'home',
     customerId: '1',
-    driverId: '1',
+    driverId: null,
     restaurantId: '1',
   },
   {
@@ -73,7 +73,7 @@ const order = [
     customerLongitude: '100.52830535401003',
     addressName: 'home',
     customerId: '1',
-    driverId: '1',
+    driverId: null,
     restaurantId: '1',
   },
   {
@@ -85,7 +85,7 @@ const order = [
     customerLongitude: '100.52830535401003',
     addressName: 'home',
     customerId: '1',
-    driverId: '1',
+    driverId: null,
     restaurantId: '1',
   },
   {
@@ -97,7 +97,7 @@ const order = [
     customerLongitude: '300',
     addressName: 'home',
     customerId: '2',
-    driverId: '2',
+    driverId: null,
     restaurantId: '2',
   },
   {

@@ -21,6 +21,7 @@ router.delete('/address/:addressId', customerController.deleteAddress);
 router.post('/searchMenus', customerController.fetchMenus);
 router.get('/getMenu/:menuId', customerController.getMenuById);
 
+router.post('/allRestaurants', customerController.getAllRestaurant);
 router.post('/cart/:cartId/append-menu', customerController.addMenusToCart);
 router.get('/restaurantsCart', customerController.getAllRestaurantsOfCarts);
 router.post('/addCart', customerController.createCart);

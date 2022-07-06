@@ -129,6 +129,13 @@ io.on('connection', (socket) => {
       io.to(socket.id).emit('error', { message: err.message });
     }
   });
+
+  socket.on('driverAcceptOrder', ({ restaurantId }) => {
+    const restaurantSocketId = findRestaurantSocketId(restaurantId);
+    io.to(restaurantSocketId).emit('notifyAcceptOrder', {
+      message: 'A driver has accepted an order',
+    });
+  });
 });
 
 io.listen(SOCKET_PORT);

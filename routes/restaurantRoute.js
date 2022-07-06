@@ -14,6 +14,8 @@ router.get(
 
 router.get('/getCategory/:categoryId', restaurantController.getCategoryById);
 
+router.get('/getDelivery', orderController.getDeliveryPendingByRestaurant);
+
 router.patch(
   '/update',
   multer.single('image'),
@@ -59,6 +61,8 @@ router.post('/assign-tags', restaurantController.assignTags);
 router.put('/change-tags', restaurantController.changeTags);
 router.get('/pickDriver', restaurantController.pickDriver);
 router.get('/pendingOrders', orderController.restaurantGetPendingOrders);
+router.patch('/pendingOrders/:orderId', orderController.restaurantUpdateOrder);
+router.delete('/menu/:menuId', orderController.deleteMenu);
 
 module.exports = router;
 //

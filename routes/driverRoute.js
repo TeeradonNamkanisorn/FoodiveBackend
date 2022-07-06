@@ -22,4 +22,5 @@ router.patch('/orderAccepted/:id', driverController.acceptOrder);
 router.patch('/deliveringStatus/:id', driverController.deliveringStatus);
 router.patch('/deliveredStatus/:id', driverController.deliveredStatus);
 router.get('/getFee/:id', driverController.getDeliveryFee);
+router.get('/currentOrder', driverController.getCurrentOrder);
 module.exports = router;

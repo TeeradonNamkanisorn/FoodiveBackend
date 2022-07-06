@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       driverImage: DataTypes.STRING,
       driverImagePublicId: DataTypes.STRING,
       status: {
-        type: DataTypes.ENUM('AVAILABLE', 'UNAVAILABLE'),
+        type: DataTypes.ENUM('AVAILABLE', 'UNAVAILABLE', 'BUSY'),
         default: 'UNAVAILABLE',
       },
       latitude: {

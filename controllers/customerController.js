@@ -554,6 +554,38 @@ exports.createAddress = async (req, res, next) => {
   }
 };
 
+exports.getAllRestaurant = async (req, res, next) => {
+  try {
+    const { latitude, longitude } = req.body;
+
+    const restaurants = await Restaurant.findAll({
+      attributes: {
+        exclude: ['password'],
+      },
+    });
+
+    const restaurantsWithDistance = JSON.parse(JSON.stringify(restaurants)).map(
+      (res) => {
+        const distance = getDistanceFromLatLonInKm(
+          res.latitude,
+          res.longitude,
+          latitude,
+          longitude,
+        );
+        return { ...res, distance };
+      },
+    );
+
+    const sortedRestaurants = restaurantsWithDistance.sort(
+      (a, b) => a.distance - b.distance,
+    );
+
+    res.json({ restaurants: sortedRestaurants });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getRestaurantById = async (req, res, next) => {
   try {
     const { id } = req.params;

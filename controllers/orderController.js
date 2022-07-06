@@ -1,7 +1,9 @@
 const createError = require('../services/createError');
 const {
   sequelize,
+  Customer,
   Order,
+  Driver,
   OrderMenu,
   OrderMenuOptionGroup,
   OrderMenuOption,
@@ -9,6 +11,7 @@ const {
   MenuOptionGroup,
   MenuOption,
 } = require('../models');
+const { Op } = require('sequelize');
 
 module.exports.fillCart = async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -16,6 +19,7 @@ module.exports.fillCart = async (req, res, next) => {
     const { orderId } = req.params;
     const { latitude, longitude, address } = req.body;
     let totalPrice = 0;
+
     let cart = await Order.findByPk(orderId, {
       include: {
         model: OrderMenu,
@@ -43,12 +47,22 @@ module.exports.fillCart = async (req, res, next) => {
       transaction: t,
     });
 
-    if (cart.status !== 'IN_CART') {
-      createError("The entity you're trying to edit is not a cart");
-    }
+    const existPendingOrder = await Order.findOne({
+      where: {
+        status: {
+          [Op.or]: ['DELIVERY_PENDING', 'DRIVER_PENDING', 'RESTAURANT_PENDING'],
+        },
+        restaurantId: cart.restaurantId,
+      },
+    });
+
+    if (existPendingOrder)
+      createError(
+        'You already have an order in progress, please wait util the old order is delivered.',
+      );
 
     await Order.update(
-      { address, latitude, longitude },
+      { address, customerLatitude: latitude, customerLongitude: longitude },
       { where: { id: orderId }, transaction: t },
     );
 
@@ -93,7 +107,14 @@ module.exports.fillCart = async (req, res, next) => {
     }
 
     await Order.update(
-      { price: totalPrice, status: 'RESTAURANT_PENDING' },
+      {
+        price: totalPrice,
+        status: 'RESTAURANT_PENDING',
+        address,
+        customerLatitude: latitude,
+        customerLongitude: longitude,
+        addressName: address,
+      },
       { where: { id: orderId }, transaction: t },
     );
 
@@ -123,6 +144,43 @@ module.exports.fillCart = async (req, res, next) => {
   }
 };
 
+exports.getDeliveryPendingByRestaurant = async (req, res, next) => {
+  try {
+    const order = await Order.findAll({
+      where: {
+        status: 'DELIVERY_PENDING',
+        restaurantId: req.user.id,
+      },
+      include: [
+        {
+          model: OrderMenu,
+          include: {
+            model: OrderMenuOptionGroup,
+            include: OrderMenuOption,
+          },
+          include: {
+            model: Menu,
+            attributes: ['menuImage'],
+          },
+        },
+        {
+          model: Customer,
+          attributes: ['firstName', 'lastName', 'phoneNumber'],
+        },
+        {
+          model: Driver,
+          attributes: ['firstName', 'lastName', 'phoneNumber'],
+        },
+      ],
+      order: [['updatedAt', 'DESC']],
+    });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.restaurantGetPendingOrders = async (req, res, next) => {
   try {
     const order = await Order.findAll({
@@ -130,12 +188,128 @@ exports.restaurantGetPendingOrders = async (req, res, next) => {
         status: 'RESTAURANT_PENDING',
         restaurantId: req.user.id,
       },
-      include: {
-        model: OrderMenu,
-        include: {
-          model: OrderMenuOptionGroup,
-          include: OrderMenuOption,
+      include: [
+        {
+          model: OrderMenu,
+          include: {
+            model: OrderMenuOptionGroup,
+            include: OrderMenuOption,
+          },
         },
+        {
+          model: Customer,
+          attributes: ['firstName', 'lastName', 'phoneNumber'],
+        },
+      ],
+    });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.restaurantUpdateOrder = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const { status } = req.body;
+    const order = await Order.findByPk(orderId);
+
+    if (order.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant');
+    }
+
+    await Order.update({ status }, { where: { id: orderId } });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteMenu = async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { menuId } = req.params;
+    const menu = await Menu.findByPk(menuId);
+
+    if (menu.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant', 400);
+    }
+
+    if (!menu) {
+      createError('Menu not found', 400);
+    }
+
+    const menuOptionGroups = await MenuOptionGroup.findAll({
+      where: {
+        menuId,
+      },
+    });
+
+    const menuOptionGroupIds = JSON.parse(JSON.stringify(menuOptionGroups)).map(
+      (el) => el.id,
+    );
+
+    const menuOptions = await MenuOption.findAll({
+      where: {
+        menuOptionGroupId: menuOptionGroupIds,
+      },
+      transaction: t,
+    });
+
+    const menuOptionsIds = JSON.parse(JSON.stringify(menuOptions)).map(
+      (el) => el.id,
+    );
+
+    await MenuOption.update(
+      { status: 'DEACTIVATED' },
+      {
+        where: {
+          id: menuOptionsIds,
+        },
+        transaction: t,
+      },
+    );
+
+    await MenuOptionGroup.update(
+      { status: 'DEACTIVATED' },
+      {
+        where: {
+          id: menuOptionGroupIds,
+        },
+        transaction: t,
+      },
+    );
+
+    await Menu.update(
+      { status: 'DEACTIVATED' },
+      {
+        where: {
+          id: menuId,
+        },
+        transaction: t,
+      },
+    );
+
+    await t.commit();
+    res.sendStatus(204);
+  } catch (err) {
+    await t.rollback();
+    next(err);
+  }
+};
+
+exports.customerGetCurrentPendingOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        status: 'DELIVERY_PENDING',
+        customerId: req.user.id,
+      },
+      include: {
+        model: Driver,
+        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
       },
     });
 

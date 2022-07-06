@@ -5,6 +5,7 @@ const {
   Order,
   Restaurant,
   sequelize,
+  Customer,
   OrderMenu,
   Menu,
 } = require('../models');
@@ -67,12 +68,18 @@ exports.updateStatus = async (req, res, next) => {
     const driver = await Driver.findByPk(req.user.id);
     const { status } = req.body;
 
+    console.log('statue', status);
+
     if (!driver) {
       createError('You are unauthorize.', 400);
     }
 
-    if (status !== 'UNAVAILABLE' && status !== 'AVAILABLE') {
-      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE'", 400);
+    if (
+      status !== 'UNAVAILABLE' &&
+      status !== 'AVAILABLE' &&
+      status !== 'BUSY'
+    ) {
+      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE' or 'BUSY'", 400);
     }
 
     if (driver.status === status) {
@@ -130,6 +137,7 @@ exports.searchOrder = async (req, res, next) => {
       where: {
         status: 'DRIVER_PENDING',
         driverId: null,
+
       },
       include: [
         {
@@ -238,7 +246,10 @@ exports.deliveringStatus = async (req, res, next) => {
     if (!id) {
       createError('order id are required', 400);
     }
-    await Order.update({ status: 'DELIVERY_PENDING' }, { where: { id } });
+    await Order.update(
+      { status: 'DELIVERY_PENDING', driverId },
+      { where: { id } },
+    );
 
     res.json({
       message: `orderId : ${id} status : ${'DELIVERY_PENDING'} by driverId : ${driverId}`,
@@ -277,6 +288,27 @@ exports.getDeliveryFee = async (req, res, next) => {
       },
       attributes: ['deliveryFee'],
     });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCurrentOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        driverId: req.user.id,
+        status: 'DELIVERY_PENDING',
+      },
+      include: {
+        model: Customer,
+        attributes: ['firstName', 'lastName', 'phoneNumber', 'profileImage'],
+      },
+    });
+
+    console.log(req.user.id);
 
     res.json({ order });
   } catch (err) {

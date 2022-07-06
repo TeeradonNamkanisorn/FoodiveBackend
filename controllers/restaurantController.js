@@ -55,6 +55,9 @@ exports.getCategoryById = async (req, res, next) => {
       include: [
         {
           model: Menu,
+          where: {
+            status: 'ACTIVE',
+          },
           include: [{ model: MenuOptionGroup, include: [MenuOption] }],
         },
       ],

@@ -27,6 +27,8 @@ exports.chargeCustomer = async (req, res, next) => {
       description: req.user.email + ' ' + new Date(),
     });
 
+    console.log('sum: ', sum);
+
     const charge = await omise.charges.create({
       amount: sum * 100,
       currency: 'thb',

@@ -35,7 +35,6 @@ exports.getAllCategoryFromRestaurantId = async (req, res, next) => {
       where: {
         restaurantId: id,
       },
-      order: [['createdAt', 'DESC']],
     });
 
     res.json({ category });
@@ -58,18 +57,12 @@ exports.getCategoryById = async (req, res, next) => {
           where: {
             status: 'ACTIVE',
           },
+          required: false,
           include: [{ model: MenuOptionGroup, include: [MenuOption] }],
         },
       ],
+      order: [[Menu, 'id', 'DESC']],
     });
-
-    // const menu = await Menu.findAll({
-    //   where: {
-    //     categoryId,
-    //   },
-    //   order: [['createdAt', 'DESC']],
-    //   include: [{ model: MenuOptionGroup, include: [MenuOption] }],
-    // });
 
     res.json({ category });
   } catch (err) {
@@ -121,9 +114,7 @@ exports.updateStatusRes = async (req, res, next) => {
   try {
     // ENUM('open', 'close')
     const { status } = req.body;
-    const restaurant = req.user;
-
-    console.log(status);
+    const restaurant = await Restaurant.findByPk(req.user.id);
 
     if (status !== 'open' && status !== 'close') {
       createError('Status must be "open" or "close"', 400);
@@ -141,8 +132,6 @@ exports.updateStatusRes = async (req, res, next) => {
     }
 
     await restaurant.save();
-
-    console.log(restaurant.status);
 
     res.json({ message: 'Change status restaurant success.' });
   } catch (err) {

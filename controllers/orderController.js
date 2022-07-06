@@ -52,7 +52,6 @@ module.exports.fillCart = async (req, res, next) => {
         status: {
           [Op.or]: ['DELIVERY_PENDING', 'DRIVER_PENDING', 'RESTAURANT_PENDING'],
         },
-        restaurantId: cart.restaurantId,
       },
     });
 

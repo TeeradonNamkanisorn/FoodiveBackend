@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       phoneNumber: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false,
         validate: {
           is: {
             args: ['^(0[689]{1})+([0-9]{8})+$', 'g'],

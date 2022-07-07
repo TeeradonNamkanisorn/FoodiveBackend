@@ -18,9 +18,37 @@ const genToken = (payload) =>
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
+exports.googleLoginRestaurant = async (req, res, next) => {
+  try {
+    const { googleData } = req.body;
+
+    const payload = jwt.decode(googleData);
+
+    const existingUser = await Restaurant.findOne({
+      where: { googleId: payload.sub },
+    });
+
+    if (!existingUser) {
+      const newUser = await Restaurant.create({
+        name: payload.given_name,
+        email: payload.email,
+        image: payload.picture,
+        googleId: payload.sub,
+      });
+    }
+
+    const user = await Restaurant.findOne({ where: { googleId: payload.sub } });
+
+    const token = genToken({ email: user.email, role: 'restaurant' });
+
+    res.status(200).json({ token });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.googleLoginCustomer = async (req, res, next) => {
   try {
-    const { role } = req.params;
     const { googleData } = req.body;
 
     const payload = jwt.decode(googleData);
@@ -32,7 +60,7 @@ exports.googleLoginCustomer = async (req, res, next) => {
     if (!existingUser) {
       const newUser = await Customer.create({
         firstName: payload.given_name,
-        lastName: payload.given_name,
+        lastName: payload.family_name,
         email: payload.email,
         profileImage: payload.picture,
         googleId: payload.sub,
@@ -41,7 +69,37 @@ exports.googleLoginCustomer = async (req, res, next) => {
 
     const user = await Customer.findOne({ where: { googleId: payload.sub } });
 
-    const token = genToken({ email: user.email, role });
+    const token = genToken({ email: user.email, role: 'customer' });
+
+    res.status(200).json({ token });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.googleLoginDriver = async (req, res, next) => {
+  try {
+    const { googleData } = req.body;
+
+    const payload = jwt.decode(googleData);
+
+    const existingUser = await Driver.findOne({
+      where: { googleId: payload.sub },
+    });
+
+    if (!existingUser) {
+      const newUser = await Driver.create({
+        firstName: payload.given_name,
+        lastName: payload.family_name,
+        email: payload.email,
+        driverImage: payload.picture,
+        googleId: payload.sub,
+      });
+    }
+
+    const user = await Driver.findOne({ where: { googleId: payload.sub } });
+
+    const token = genToken({ email: user.email, role: 'driver' });
 
     res.status(200).json({ token });
   } catch (err) {

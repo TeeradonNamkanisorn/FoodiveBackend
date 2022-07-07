@@ -35,6 +35,8 @@ exports.getAllCategoryFromRestaurantId = async (req, res, next) => {
       where: {
         restaurantId: id,
       },
+      order: [['createdAt', 'DESC']],
+
     });
 
     res.json({ category });
@@ -57,12 +59,14 @@ exports.getCategoryById = async (req, res, next) => {
           where: {
             status: 'ACTIVE',
           },
+
           required: false,
           include: [{ model: MenuOptionGroup, include: [MenuOption] }],
         },
       ],
       order: [[Menu, 'id', 'DESC']],
     });
+
 
     res.json({ category });
   } catch (err) {
@@ -74,11 +78,14 @@ exports.updateRestaurant = async (req, res, next) => {
   try {
     // UPDATE : name , image
     const { name } = req.body;
-    const restaurant = req.user;
+
+    const restaurant = await Restaurant.findByPk(req.user.id);
 
     if (!restaurant) {
       createError('You are unauthorized.', 400);
     }
+
+    console.log(req.imageFile);
 
     if (!req.imageFile && !name) {
       createError('Cannot update empty value.', 400);

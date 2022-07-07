@@ -55,7 +55,8 @@ module.exports.createCart = async (req, res, next) => {
     //validating objecttttttttt
 
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
-    console.log(menus);
+
+    menus.map((el) => console.log('option group', el.optionGroup));
 
     for (let menu of menus) {
       const menuId = menu.id;
@@ -81,9 +82,6 @@ module.exports.createCart = async (req, res, next) => {
         );
 
         for (let option of optionGroup.options) {
-          console.log(
-            restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id],
-          );
           if (
             !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
               .options[option.id]
@@ -142,7 +140,9 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
+
       if (!restaurantMenuObj[menu.id]) createError('Wrong restaurant');
+
       const orderMenu = await OrderMenu.create(
         {
           orderId,
@@ -609,6 +609,7 @@ exports.getRestaurantById = async (req, res, next) => {
     });
 
     const distance = getDistanceFromLatLonInKm(
+
       latitude,
       longitude,
       restaurant.latitude,

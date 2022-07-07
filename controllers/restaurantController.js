@@ -244,7 +244,7 @@ exports.addMenu = async (req, res, next) => {
 
     await t.commit();
 
-    res.status(201).json({ menu });
+    res.status(201).json({ menu, message: 'Create menu success' });
   } catch (err) {
     await t.rollback();
     next(err);

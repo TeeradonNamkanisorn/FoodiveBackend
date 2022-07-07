@@ -387,10 +387,10 @@ exports.fetchMenus = async (req, res, next) => {
       const matches = matchedMenus.length;
 
       const distance = getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        restaurant.latitude,
-        restaurant.longitude,
+        +latitude,
+        +longitude,
+        +restaurant.latitude,
+        +restaurant.longitude,
       );
 
       const score = matches / (distance + 1) ** 2;
@@ -569,8 +569,8 @@ exports.getAllRestaurant = async (req, res, next) => {
     const restaurantsWithDistance = JSON.parse(JSON.stringify(restaurants)).map(
       (res) => {
         const distance = getDistanceFromLatLonInKm(
-          res.latitude,
-          res.longitude,
+          +res.latitude,
+          +res.longitude,
           latitude,
           longitude,
         );
@@ -609,10 +609,10 @@ exports.getRestaurantById = async (req, res, next) => {
     });
 
     const distance = getDistanceFromLatLonInKm(
-      latitude,
-      longitude,
-      restaurant.latitude,
-      restaurant.longitude,
+      +latitude,
+      +longitude,
+      +restaurant.latitude,
+      +restaurant.longitude,
     );
 
     res.json({

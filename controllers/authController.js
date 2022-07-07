@@ -43,6 +43,7 @@ exports.googleLoginCustomer = async (req, res, next) => {
 
     const user = await Customer.findOne({ where: { googleId: payload.sub } });
 
+    console.log(googleData);
     const token = genToken({ email: user.email, role });
 
     res.status(200).json({ token });

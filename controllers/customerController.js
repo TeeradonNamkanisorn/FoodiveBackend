@@ -140,7 +140,6 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
-
       if (!restaurantMenuObj[menu.id]) createError('Wrong restaurant');
 
       const orderMenu = await OrderMenu.create(
@@ -362,7 +361,6 @@ exports.fetchMenus = async (req, res, next) => {
       },
     });
 
-    console.log(latitude, longitude);
     restaurants = JSON.parse(JSON.stringify(restaurants));
 
     restaurants = restaurants.map((restaurant) => {
@@ -387,10 +385,10 @@ exports.fetchMenus = async (req, res, next) => {
       const matches = matchedMenus.length;
 
       const distance = getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        restaurant.latitude,
-        restaurant.longitude,
+        +latitude,
+        +longitude,
+        +restaurant.latitude,
+        +restaurant.longitude,
       );
 
       const score = matches / (distance + 1) ** 2;
@@ -398,7 +396,6 @@ exports.fetchMenus = async (req, res, next) => {
     });
 
     restaurants.sort((a, b) => b.score - a.score);
-    console.log(restaurants);
 
     // select one menu from restaurant
     let menus = restaurants.map((restaurant) => {
@@ -569,8 +566,8 @@ exports.getAllRestaurant = async (req, res, next) => {
     const restaurantsWithDistance = JSON.parse(JSON.stringify(restaurants)).map(
       (res) => {
         const distance = getDistanceFromLatLonInKm(
-          res.latitude,
-          res.longitude,
+          +res.latitude,
+          +res.longitude,
           latitude,
           longitude,
         );
@@ -609,11 +606,10 @@ exports.getRestaurantById = async (req, res, next) => {
     });
 
     const distance = getDistanceFromLatLonInKm(
-
-      latitude,
-      longitude,
-      restaurant.latitude,
-      restaurant.longitude,
+      +latitude,
+      +longitude,
+      +restaurant.latitude,
+      +restaurant.longitude,
     );
 
     res.json({
@@ -717,15 +713,23 @@ exports.getCart = async (req, res, next) => {
     }
 
     const cart = await Order.findByPk(cartId, {
-      include: {
-        model: OrderMenu,
-        include: {
-          model: OrderMenuOptionGroup,
+      include: [
+        {
+          model: OrderMenu,
           include: {
-            model: OrderMenuOption,
+            model: OrderMenuOptionGroup,
+            include: {
+              model: OrderMenuOption,
+            },
           },
         },
-      },
+        {
+          model: Restaurant,
+          attributes: {
+            exclude: ['password'],
+          },
+        },
+      ],
     });
 
     if (!cart) createError('cart not found', 400);
@@ -738,7 +742,25 @@ exports.getCart = async (req, res, next) => {
       createError('You are unauthorized', 400);
     }
 
-    let cartSurface = await Order.findByPk(cartId);
+    let cartSurface = await Order.findByPk(cartId, {
+      include: [
+        {
+          model: OrderMenu,
+          include: {
+            model: OrderMenuOptionGroup,
+            include: {
+              model: OrderMenuOption,
+            },
+          },
+        },
+        {
+          model: Restaurant,
+          attributes: {
+            exclude: ['password'],
+          },
+        },
+      ],
+    });
     cartSurface = JSON.parse(JSON.stringify(cartSurface));
 
     const cartItems = await getFullCart(JSON.parse(JSON.stringify(cart)));

@@ -649,16 +649,16 @@ exports.pickDriver = async (req, res, next) => {
     if (!driverData) createError('driver not found');
     driverData.sort((a, b) => {
       const distanceFromA = getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        a.latitude,
-        a.longitude,
+        +latitude,
+        +longitude,
+        +a.latitude,
+        +a.longitude,
       );
       const distanceFromB = getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        b.latitude,
-        b.longitude,
+        +latitude,
+        +longitude,
+        +b.latitude,
+        +b.longitude,
       );
       return distanceFromA - distanceFromB;
     });
@@ -666,10 +666,10 @@ exports.pickDriver = async (req, res, next) => {
     const chosenDriver = driverData[0];
 
     chosenDriver.distance = getDistanceFromLatLonInKm(
-      latitude,
-      longitude,
-      chosenDriver.latitude,
-      chosenDriver.longitude,
+      +latitude,
+      +longitude,
+      +chosenDriver.latitude,
+      +chosenDriver.longitude,
     );
     //
     res.json({ driver: chosenDriver });

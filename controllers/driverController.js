@@ -148,16 +148,19 @@ exports.searchOrder = async (req, res, next) => {
         {
           model: OrderMenu,
         },
+        {
+          model: Customer,
+        },
       ],
     });
     parseorder = JSON.parse(JSON.stringify(order));
     let orderArr = [];
     parseorder.forEach((element) => {
       getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        element.Restaurant.latitude,
-        element.Restaurant.longitude,
+        +latitude,
+        +longitude,
+        +element.Restaurant.latitude,
+        +element.Restaurant.longitude,
       ) <= 20
         ? orderArr.push(element)
         : '';

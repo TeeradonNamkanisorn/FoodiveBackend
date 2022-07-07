@@ -25,8 +25,6 @@ function addOnlineUser(userData, role) {
   );
   if (existUser) return;
 
-  console.log('new user');
-
   onlineUsers[role + 's'].push({
     ...userData,
     notifiedNearby: role === 'customer' ? false : undefined,
@@ -39,7 +37,6 @@ function updateDriverPosition(userData) {
   driver.latitude = userData.latitude;
   driver.longitude = userData.longitude;
   driver.status = userData.status;
-  console.log('updating driver position');
 }
 
 const findAndDeleteUserFromSocketId = (socketId) => {
@@ -61,10 +58,8 @@ const findRestaurantSocketId = (restaurantId) => {
 };
 
 io.on('connection', (socket) => {
-  console.log('connect');
   socket.on('newUser', (data) => {
     addOnlineUser({ ...data.info, socketId: socket.id }, data.role);
-    console.log(onlineUsers);
   });
 
   socket.on('updateDriverPosition', (userData) => {
@@ -73,41 +68,35 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     findAndDeleteUserFromSocketId(socket.id);
-    console.log(onlineUsers);
   });
 
   socket.on('forceDisconnect', () => {
     findAndDeleteUserFromSocketId(socket.id);
-    console.log('manual disconnect');
-    console.log(onlineUsers);
+
     socket.disconnect();
   });
 
   socket.on(
     'restaurantAccept',
     ({ restaurantLatitude, restaurantLongitude }) => {
-
-      console.log('restaurant accept');
       try {
         let availableDrivers = onlineUsers.drivers;
         availableDrivers = availableDrivers.filter((driver) => {
           return driver.latitude !== null;
         });
 
-        console.log(availableDrivers);
         availableDrivers.filter((driver) => {
           const distance = getDistanceFromLatLonInKm(
-            restaurantLatitude,
-            restaurantLongitude,
-            driver.latitude,
-            driver.longitude,
+            +restaurantLatitude,
+            +restaurantLongitude,
+            +driver.latitude,
+            +driver.longitude,
           );
 
           return distance <= 10 && driver.status === 'AVAILABLE';
         });
 
         const socketIds = availableDrivers.map((driver) => driver.socketId);
-        console.log(socketIds);
         for (let i = 0; i < socketIds.length; i++) {
           io.to(socketIds[i]).emit('notifyDriverOrder', {
             message: 'You may accept the upcoming order',
@@ -132,6 +121,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('driverAcceptOrder', ({ restaurantId }) => {
+    console.log('driver accepted');
+    console.log(restaurantId);
     const restaurantSocketId = findRestaurantSocketId(restaurantId);
     io.to(restaurantSocketId).emit('notifyAcceptOrder', {
       message: 'A driver has accepted an order',

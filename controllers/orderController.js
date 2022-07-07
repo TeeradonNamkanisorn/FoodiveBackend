@@ -17,8 +17,14 @@ module.exports.fillCart = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const { orderId } = req.params;
-    const { latitude, longitude, address } = req.body;
-    let totalPrice = 0;
+    const {
+      latitude,
+      longitude,
+      address,
+      distance,
+      deliveryFee = 0,
+    } = req.body;
+    let totalPrice = deliveryFee;
 
     let cart = await Order.findByPk(orderId, {
       include: {
@@ -52,7 +58,6 @@ module.exports.fillCart = async (req, res, next) => {
         status: {
           [Op.or]: ['DELIVERY_PENDING', 'DRIVER_PENDING', 'RESTAURANT_PENDING'],
         },
-        restaurantId: cart.restaurantId,
       },
     });
 
@@ -62,7 +67,13 @@ module.exports.fillCart = async (req, res, next) => {
       );
 
     await Order.update(
-      { address, customerLatitude: latitude, customerLongitude: longitude },
+      {
+        address,
+        customerLatitude: latitude,
+        customerLongitude: longitude,
+        distance,
+        deliveryFee,
+      },
       { where: { id: orderId }, transaction: t },
     );
 

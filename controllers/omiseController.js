@@ -30,7 +30,7 @@ exports.chargeCustomer = async (req, res, next) => {
     console.log('sum: ', sum);
 
     const charge = await omise.charges.create({
-      amount: sum * 100,
+      amount: Math.floor(sum * 100),
       currency: 'thb',
       customer: customer.id,
     });

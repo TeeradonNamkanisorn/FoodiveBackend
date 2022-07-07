@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         unique: true,
       },
+      googleId: {
+        type: DataTypes.STRING,
+      },
       phoneNumber: {
         type: DataTypes.STRING,
         unique: true,
@@ -30,8 +33,8 @@ module.exports = (sequelize, DataTypes) => {
       driverImage: DataTypes.STRING,
       driverImagePublicId: DataTypes.STRING,
       status: {
-        type: DataTypes.ENUM('AVAILABLE', 'UNAVAILABLE'),
-        default: 'UNAVAILABLE',
+        type: DataTypes.ENUM('AVAILABLE', 'UNAVAILABLE', 'BUSY'),
+        defaultValue: 'UNAVAILABLE',
       },
       latitude: {
         type: DataTypes.DECIMAL(18, 15),

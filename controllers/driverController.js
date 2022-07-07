@@ -5,7 +5,9 @@ const {
   Order,
   Restaurant,
   sequelize,
+  Customer,
   OrderMenu,
+  Menu,
 } = require('../models');
 const { Op, where, QueryTypes } = require('sequelize');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
@@ -66,12 +68,18 @@ exports.updateStatus = async (req, res, next) => {
     const driver = await Driver.findByPk(req.user.id);
     const { status } = req.body;
 
+    console.log('statue', status);
+
     if (!driver) {
       createError('You are unauthorize.', 400);
     }
 
-    if (status !== 'UNAVAILABLE' && status !== 'AVAILABLE') {
-      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE'", 400);
+    if (
+      status !== 'UNAVAILABLE' &&
+      status !== 'AVAILABLE' &&
+      status !== 'BUSY'
+    ) {
+      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE' or 'BUSY'", 400);
     }
 
     if (driver.status === status) {
@@ -128,6 +136,7 @@ exports.searchOrder = async (req, res, next) => {
     let order = await Order.findAll({
       where: {
         status: 'DRIVER_PENDING',
+        driverId: null,
       },
       include: [
         {
@@ -149,7 +158,7 @@ exports.searchOrder = async (req, res, next) => {
         longitude,
         element.Restaurant.latitude,
         element.Restaurant.longitude,
-      ) <= 10
+      ) <= 20
         ? orderArr.push(element)
         : '';
     });
@@ -164,6 +173,40 @@ exports.getOrderById = async (req, res, next) => {
   try {
     const { orderId } = req.params;
     const order = await Order.findByPk(orderId);
+
+    if (order.status === 'IN_CART')
+      createError('You cannot view this resource', 400);
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getOrderDetailById = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const order = await Order.findOne({
+      where: {
+        id: orderId,
+      },
+      include: [
+        {
+          model: Restaurant,
+          attributes: {
+            exclude: ['password'],
+          },
+        },
+        {
+          model: OrderMenu,
+          include: [
+            {
+              model: Menu,
+            },
+          ],
+        },
+      ],
+    });
 
     if (order.status === 'IN_CART')
       createError('You cannot view this resource', 400);
@@ -202,7 +245,10 @@ exports.deliveringStatus = async (req, res, next) => {
     if (!id) {
       createError('order id are required', 400);
     }
-    await Order.update({ status: 'DELIVERY_PENDING' }, { where: { id } });
+    await Order.update(
+      { status: 'DELIVERY_PENDING', driverId },
+      { where: { id } },
+    );
 
     res.json({
       message: `orderId : ${id} status : ${'DELIVERY_PENDING'} by driverId : ${driverId}`,
@@ -241,6 +287,27 @@ exports.getDeliveryFee = async (req, res, next) => {
       },
       attributes: ['deliveryFee'],
     });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCurrentOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        driverId: req.user.id,
+        status: 'DELIVERY_PENDING',
+      },
+      include: {
+        model: Customer,
+        attributes: ['firstName', 'lastName', 'phoneNumber', 'profileImage'],
+      },
+    });
+
+    console.log(req.user.id);
 
     res.json({ order });
   } catch (err) {

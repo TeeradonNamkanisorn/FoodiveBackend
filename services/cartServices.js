@@ -64,7 +64,7 @@ const optionGroupList = async () => {
 
 const getFullMenuObj = async (restaurantId) => {
   const restaurantMenus = await Menu.findAll({
-    where: restaurantId,
+    where: { restaurantId },
     include: { model: MenuOptionGroup, include: MenuOption },
   });
   const restaurantMenuObj = {};
@@ -84,6 +84,7 @@ const getFullMenuObj = async (restaurantId) => {
 
   return restaurantMenuObj;
 };
+
 //{
 //     "cart": {
 //         "id": 3,

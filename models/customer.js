@@ -17,10 +17,12 @@ module.exports = (sequelize, DataTypes) => {
       gmail: {
         type: DataTypes.STRING,
       },
+      googleId: {
+        type: DataTypes.STRING,
+      },
       phoneNumber: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false,
         validate: {
           is: {
             args: ['^(0[689]{1})+([0-9]{8})+$', 'g'],

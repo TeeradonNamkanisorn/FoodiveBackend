@@ -4,10 +4,12 @@ const authRoute = express.Router();
 
 const authController = require('../controllers/authController');
 
-// RESTAURANT
-authRoute.post('/login/restaurant', authController.loginRestaurant);
+// GOOGLE LOGIN
+authRoute.post('/login/google/:role', authController.googleLoginCustomer);
 
+// RESTAURANT
 authRoute.post('/register/restaurant', authController.registerRestaurant);
+authRoute.post('/login/restaurant', authController.loginRestaurant);
 
 // CUSTOMER
 authRoute.post('/register/customer', authController.registerCustomer);

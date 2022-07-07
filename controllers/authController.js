@@ -13,11 +13,43 @@ const nodemailer = require('nodemailer');
 const generator = require('generate-password');
 
 const { Op } = require('sequelize');
+const e = require('express');
 
 const genToken = (payload) =>
   jwt.sign(payload, process.env.JWT_SECRET_KEY, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
+
+exports.googleLoginCustomer = async (req, res, next) => {
+  try {
+    const { role } = req.params;
+    const { googleData } = req.body;
+
+    const payload = jwt.decode(googleData);
+
+    const existingUser = await Customer.findOne({
+      where: { googleId: payload.sub },
+    });
+
+    if (!existingUser) {
+      const newUser = await Customer.create({
+        firstName: payload.given_name,
+        lastName: payload.given_name,
+        email: payload.email,
+        profileImage: payload.picture,
+        googleId: payload.sub,
+      });
+    }
+
+    const user = await Customer.findOne({ where: { googleId: payload.sub } });
+
+    const token = genToken({ email: user.email, role });
+
+    res.status(200).json({ token });
+  } catch (err) {
+    next(err);
+  }
+};
 
 //Only for register with email/password
 exports.registerRestaurant = async (req, res, next) => {
@@ -41,7 +73,6 @@ exports.registerRestaurant = async (req, res, next) => {
       { transaction: t },
     );
 
-    console.log(restaurant.id);
     await Category.create(
       { name: 'other', restaurantId: restaurant.id },
       { transaction: t },

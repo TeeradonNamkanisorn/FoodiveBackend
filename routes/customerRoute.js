@@ -7,7 +7,7 @@ const { uploadImage } = require('../middlewares/cloudinaryUploads');
 const authenticator = require('../middlewares/authenticator');
 
 router.get('/getMe', customerController.getMe);
-router.get('/restaurant/:id', customerController.getRestaurantById);
+router.post('/restaurant/:id', customerController.getRestaurantById);
 router.delete('/deleteMenu/:orderMenuId', customerController.removeMenu);
 router.put('/modifyMenu', customerController.modifyMenu);
 router.put(
@@ -21,6 +21,7 @@ router.delete('/address/:addressId', customerController.deleteAddress);
 router.post('/searchMenus', customerController.fetchMenus);
 router.get('/getMenu/:menuId', customerController.getMenuById);
 
+router.post('/allRestaurants', customerController.getAllRestaurant);
 router.post('/cart/:cartId/append-menu', customerController.addMenusToCart);
 router.get('/restaurantsCart', customerController.getAllRestaurantsOfCarts);
 router.post('/addCart', customerController.createCart);
@@ -31,6 +32,7 @@ router.post(
   omiseController.chargeCustomer,
   orderController.fillCart,
 );
+router.get('/currentOrder', orderController.customerGetCurrentPendingOrder);
 
 router.get('/resmenu/:id', customerController.searchMenuInRestaurant);
 module.exports = router;

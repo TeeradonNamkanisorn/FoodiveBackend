@@ -55,7 +55,8 @@ module.exports.createCart = async (req, res, next) => {
     //validating objecttttttttt
 
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
-    console.log(menus);
+
+    menus.map((el) => console.log('option group', el.optionGroup));
 
     for (let menu of menus) {
       const menuId = menu.id;
@@ -81,9 +82,6 @@ module.exports.createCart = async (req, res, next) => {
         );
 
         for (let option of optionGroup.options) {
-          console.log(
-            restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id],
-          );
           if (
             !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
               .options[option.id]
@@ -142,6 +140,9 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
+
+      if (!restaurantMenuObj[menu.id]) createError('Wrong restaurant');
+
       const orderMenu = await OrderMenu.create(
         {
           orderId,
@@ -154,6 +155,7 @@ exports.addMenusToCart = async (req, res, next) => {
       );
 
       for (let optionGroup of menu.optionGroups) {
+        console.log(restaurantMenuObj, orderMenu.menuId);
         if (!restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]) {
           createError('invalid option group');
         }
@@ -554,9 +556,42 @@ exports.createAddress = async (req, res, next) => {
   }
 };
 
+exports.getAllRestaurant = async (req, res, next) => {
+  try {
+    const { latitude, longitude } = req.body;
+
+    const restaurants = await Restaurant.findAll({
+      attributes: {
+        exclude: ['password'],
+      },
+    });
+
+    const restaurantsWithDistance = JSON.parse(JSON.stringify(restaurants)).map(
+      (res) => {
+        const distance = getDistanceFromLatLonInKm(
+          res.latitude,
+          res.longitude,
+          latitude,
+          longitude,
+        );
+        return { ...res, distance };
+      },
+    );
+
+    const sortedRestaurants = restaurantsWithDistance.sort(
+      (a, b) => a.distance - b.distance,
+    );
+
+    res.json({ restaurants: sortedRestaurants });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getRestaurantById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { latitude, longitude } = req.body;
 
     const restaurant = await Restaurant.findByPk(id, {
       include: {
@@ -573,7 +608,17 @@ exports.getRestaurantById = async (req, res, next) => {
       },
     });
 
-    res.json({ restaurant });
+    const distance = getDistanceFromLatLonInKm(
+
+      latitude,
+      longitude,
+      restaurant.latitude,
+      restaurant.longitude,
+    );
+
+    res.json({
+      restaurant: { ...JSON.parse(JSON.stringify(restaurant)), distance },
+    });
   } catch (error) {
     next(error);
   }

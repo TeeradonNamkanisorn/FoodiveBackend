@@ -1,9 +1,9 @@
 const createError = require('../services/createError');
 const {
   sequelize,
-  Driver,
   Customer,
   Order,
+  Driver,
   OrderMenu,
   OrderMenuOptionGroup,
   OrderMenuOption,
@@ -11,6 +11,7 @@ const {
   MenuOptionGroup,
   MenuOption,
 } = require('../models');
+const { Op } = require('sequelize');
 
 module.exports.fillCart = async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -18,6 +19,7 @@ module.exports.fillCart = async (req, res, next) => {
     const { orderId } = req.params;
     const { latitude, longitude, address } = req.body;
     let totalPrice = 0;
+
     let cart = await Order.findByPk(orderId, {
       include: {
         model: OrderMenu,
@@ -45,9 +47,19 @@ module.exports.fillCart = async (req, res, next) => {
       transaction: t,
     });
 
-    if (cart.status !== 'IN_CART') {
-      createError("The entity you're trying to edit is not a cart");
-    }
+    const existPendingOrder = await Order.findOne({
+      where: {
+        status: {
+          [Op.or]: ['DELIVERY_PENDING', 'DRIVER_PENDING', 'RESTAURANT_PENDING'],
+        },
+        restaurantId: cart.restaurantId,
+      },
+    });
+
+    if (existPendingOrder)
+      createError(
+        'You already have an order in progress, please wait util the old order is delivered.',
+      );
 
     await Order.update(
       { address, customerLatitude: latitude, customerLongitude: longitude },
@@ -284,6 +296,25 @@ exports.deleteMenu = async (req, res, next) => {
     res.sendStatus(204);
   } catch (err) {
     await t.rollback();
+    next(err);
+  }
+};
+
+exports.customerGetCurrentPendingOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        status: 'DELIVERY_PENDING',
+        customerId: req.user.id,
+      },
+      include: {
+        model: Driver,
+        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
+      },
+    });
+
+    res.json({ order });
+  } catch (err) {
     next(err);
   }
 };

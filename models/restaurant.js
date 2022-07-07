@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
+    googleId: {
+      type: DataTypes.STRING,
+    },
     password: DataTypes.STRING,
     //url
     image: {

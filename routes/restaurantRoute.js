@@ -16,6 +16,7 @@ router.get('/getCategory/:categoryId', restaurantController.getCategoryById);
 
 router.get('/getDelivery', orderController.getDeliveryPendingByRestaurant);
 
+
 router.put(
   '/update',
   multer.single('image'),

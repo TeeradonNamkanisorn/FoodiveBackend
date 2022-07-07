@@ -16,10 +16,13 @@ router.patch('/updateLocation', driverController.updateLocation);
 router.post('/searchOrder', driverController.searchOrder);
 
 router.get('/order/:orderId', driverController.getOrderById);
+router.get('/orderDetail/:orderId', driverController.getOrderDetailById);
 router.get('/getIncome', driverController.getIncome);
-router.post('/orderAccepted/:id', driverController.acceptOrder);
-router.post('/deliveringStatus/:id', driverController.deliveringStatus);
-router.post('/deliveredStatus/:id', driverController.deliveredStatus);
+
+router.patch('/orderAccepted/:id', driverController.acceptOrder);
+router.patch('/deliveringStatus/:id', driverController.deliveringStatus);
+router.patch('/deliveredStatus/:id', driverController.deliveredStatus);
+
 router.get('/getFee/:id', driverController.getDeliveryFee);
 router.get('/currentOrder', driverController.getCurrentOrder);
 module.exports = router;

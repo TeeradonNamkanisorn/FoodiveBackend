@@ -36,7 +36,6 @@ exports.getAllCategoryFromRestaurantId = async (req, res, next) => {
         restaurantId: id,
       },
       order: [['createdAt', 'DESC']],
-
     });
 
     res.json({ category });
@@ -64,9 +63,7 @@ exports.getCategoryById = async (req, res, next) => {
           include: [{ model: MenuOptionGroup, include: [MenuOption] }],
         },
       ],
-      order: [[Menu, 'id', 'DESC']],
     });
-
 
     res.json({ category });
   } catch (err) {

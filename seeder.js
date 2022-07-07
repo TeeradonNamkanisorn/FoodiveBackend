@@ -242,7 +242,8 @@ const customers = [
     firstName: 'theme',
     lastName: 'namkanisorn',
     phoneNumber: '0922798232',
-    profileImage: 'https://commons.wikimedia.org/wiki/File:Mr._Smiley_Face.svg',
+    profileImage:
+      'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/SNice.svg/800px-SNice.svg.png',
     profileImagePublicId: 'none',
   },
   {
@@ -338,8 +339,8 @@ const restaurants = [
     password: '$2a$10$6VVLjzxhP7r9OtL7FpG/Auhn6PYwyoOeULtZLZGnW..qYqE8WmcZa',
     name: 'Chinese Restaurant',
     phoneNumber: '0822224444',
-    latitude: 13.753253,
-    longitude: 101,
+    latitude: 13.74908,
+    longitude: 100.523787,
     image:
       'https://media-cdn.tripadvisor.com/media/photo-s/07/06/10/f7/ming-palace-chinese-restaurant.jpg',
     imagePublicId: 'none',

@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       phoneNumber: {
         type: DataTypes.STRING,
         unique: true,
-        allowNull: false,
         validate: {
           is: {
             args: ['^(0[689]{1})+([0-9]{8})+$', 'g'],
@@ -34,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
       driverImagePublicId: DataTypes.STRING,
       status: {
         type: DataTypes.ENUM('AVAILABLE', 'UNAVAILABLE', 'BUSY'),
-        default: 'UNAVAILABLE',
+        defaultValue: 'UNAVAILABLE',
       },
       latitude: {
         type: DataTypes.DECIMAL(18, 15),

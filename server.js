@@ -10,6 +10,7 @@ const restaurantRoute = require('./routes/restaurantRoute');
 const customerRoute = require('./routes/customerRoute');
 const driverRoute = require('./routes/driverRoute');
 const authenticator = require('./middlewares/authenticator');
+const unknownRoleGetMe = require('./middlewares/unknownRoleGetMe');
 const app = express();
 
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use('/restaurant', authenticator('restaurant'), restaurantRoute);
 app.use('/customer', authenticator('customer'), customerRoute);
 app.use('/driver', authenticator('driver'), driverRoute);
 
+app.use(unknownRoleGetMe);
 app.use(errorHandler);
 app.use(invalidAddress);
 

@@ -140,6 +140,9 @@ exports.addMenusToCart = async (req, res, next) => {
     const restaurantMenuObj = await getFullMenuObj(restaurantId);
 
     for (let menu of menus) {
+
+      if (!restaurantMenuObj[menu.id]) createError('Wrong restaurant');
+
       const orderMenu = await OrderMenu.create(
         {
           orderId,
@@ -152,6 +155,7 @@ exports.addMenusToCart = async (req, res, next) => {
       );
 
       for (let optionGroup of menu.optionGroups) {
+        console.log(restaurantMenuObj, orderMenu.menuId);
         if (!restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]) {
           createError('invalid option group');
         }
@@ -605,15 +609,16 @@ exports.getRestaurantById = async (req, res, next) => {
     });
 
     const distance = getDistanceFromLatLonInKm(
-      restaurant.latitude,
-      restaurant.longitude,
+
       latitude,
       longitude,
+      restaurant.latitude,
+      restaurant.longitude,
     );
 
-    console.log('restaurantsWithDistance : ', distance);
-
-    res.json({ distance, restaurant });
+    res.json({
+      restaurant: { ...JSON.parse(JSON.stringify(restaurant)), distance },
+    });
   } catch (error) {
     next(error);
   }

@@ -137,7 +137,6 @@ exports.searchOrder = async (req, res, next) => {
       where: {
         status: 'DRIVER_PENDING',
         driverId: null,
-
       },
       include: [
         {

@@ -12,6 +12,7 @@ const {
   MenuOption,
 } = require('../models');
 const { Op } = require('sequelize');
+const { destroy } = require('../utils/cloudinary');
 
 module.exports.fillCart = async (req, res, next) => {
   const t = await sequelize.transaction();
@@ -325,6 +326,36 @@ exports.customerGetCurrentPendingOrder = async (req, res, next) => {
     });
 
     res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.editFoodPicture = async (req, res, next) => {
+  try {
+    const { image, menuId } = req.body;
+    const menu = await Menu.findByPk(menuId);
+
+    if (menu.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant', 400);
+    }
+
+    if (!menu) {
+      createError('Menu not found', 400);
+    }
+
+    if (req.imageFile && menu.menuImage) {
+      const deletePreviousImage = await destroy(menu.menuImagePublicId);
+    }
+
+    if (req.imageFile) {
+      menu.menuImagePublicId = req.imageFile.public_id;
+      menu.menuImage = req.imageFile.secure_url;
+    }
+
+    await menu.save();
+
+    res.json({ message: 'Update menu picture success.' });
   } catch (err) {
     next(err);
   }

@@ -1,7 +1,6 @@
 const { Server } = require('socket.io');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
 const { Restaurant, Driver } = require('../models');
-
 const io = new Server({
   cors: {
     origin: '*',
@@ -93,6 +92,7 @@ io.on('connection', (socket) => {
             +driver.latitude,
             +driver.longitude,
           );
+
           return distance <= 10 && driver.status === 'AVAILABLE';
         });
 

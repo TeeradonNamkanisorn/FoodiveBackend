@@ -9,6 +9,8 @@ const {
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const createError = require('../services/createError');
+const nodemailer = require('nodemailer');
+const generator = require('generate-password');
 
 const { Op } = require('sequelize');
 const e = require('express');
@@ -260,4 +262,117 @@ exports.loginDriver = async (req, res, next) => {
   }
 };
 
-//
+exports.forgetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const customer = await Customer.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!customer) {
+      createError('You email not found', 400);
+    }
+
+    const forgetPasswordToken = generator.generate({
+      length: 6,
+      lowercase: false,
+      numbers: true,
+    });
+
+    await Customer.update(
+      {
+        forgetPasswordToken,
+      },
+      {
+        where: {
+          email,
+        },
+      },
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_HOST,
+        pass: process.env.PASSWORD_HOST,
+      },
+    });
+
+    const option = {
+      from: process.env.EMAIL_HOST,
+      to: customer.email,
+      subject: 'Forget Password',
+      html: `
+      <p>Test</p>
+      <p>Nodemailer ENV</p>
+      <p>${forgetPasswordToken}</p>
+      `,
+    };
+
+    transporter.sendMail(option, (err, info) => {
+      if (err) {
+        createError('Something went wrong', 400);
+      } else {
+        res.json({
+          message: 'Recovery code was send please check your mail',
+          token: forgetPasswordToken,
+        });
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.forgetPasswordConfirm = async (req, res, next) => {
+  try {
+    const { email, forgetPasswordToken, password, confirmPassword } = req.body;
+
+    const customer = await Customer.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!customer) {
+      createError('You email not found', 400);
+    }
+
+    if (!forgetPasswordToken) {
+      createError('Please enter your recovery code', 400);
+    }
+
+    if (customer.forgetPasswordToken !== forgetPasswordToken) {
+      createError('Recovery code invalid', 400);
+    }
+
+    if (!password) {
+      createError('Please enter your password', 400);
+    }
+
+    if (password !== confirmPassword) {
+      createError('Password not match', 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await Customer.update(
+      {
+        password: hashedPassword,
+        forgetPasswordToken: null,
+      },
+      {
+        where: {
+          email,
+        },
+      },
+    );
+
+    res.json({ message: 'Your password was changed' });
+  } catch (err) {
+    next(err);
+  }
+};

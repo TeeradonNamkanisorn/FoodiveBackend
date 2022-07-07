@@ -62,6 +62,28 @@ const optionGroupList = async () => {
   return menuOptionGroupsObj;
 };
 
+const getFullMenuObj = async (restaurantId) => {
+  const restaurantMenus = await Menu.findAll({
+    where: restaurantId,
+    include: { model: MenuOptionGroup, include: MenuOption },
+  });
+  const restaurantMenuObj = {};
+  JSON.parse(JSON.stringify(restaurantMenus)).forEach((men) => {
+    const optionGroups = {};
+
+    men.MenuOptionGroups.forEach((opGroup) => {
+      const options = {};
+      opGroup.MenuOptions.forEach((op) => {
+        options[op.id] = op;
+      });
+      optionGroups[opGroup.id] = { ...opGroup, options };
+    });
+
+    restaurantMenuObj[men.id] = { ...men, optionGroups };
+  });
+
+  return restaurantMenuObj;
+};
 //{
 //     "cart": {
 //         "id": 3,
@@ -159,16 +181,24 @@ const getFullCart = async ({ OrderMenus }, restaurantId) => {
     totalPrice += +allMenuList[menuIdItem.menuId].price;
     return {
       name: allMenuList[menuIdItem.menuId].name,
+      image: allMenuList[menuIdItem.menuId].menuImage,
       price: allMenuList[menuIdItem.menuId].price,
+      menuId: allMenuList[menuIdItem.menuId].id,
+      id: menuIdItem.id,
       OrderMenuOptionGroups: menuIdItem.OrderMenuOptionGroups.map(
         (optionGroup) => {
           return {
             name: allMenuOptionGroups[optionGroup.menuOptionGroupId].name,
+            id: optionGroup.id,
+            menuOptionGroupId:
+              allMenuOptionGroups[optionGroup.menuOptionGroupId].id,
             options: optionGroup.OrderMenuOptions.map((option) => {
               totalPrice += +allMenuOptions[option.menuOptionId].price;
               return {
                 name: allMenuOptions[option.menuOptionId].name,
                 price: allMenuOptions[option.menuOptionId].price,
+                menuOptionId: allMenuOptions[option.menuOptionId].id,
+                id: option.id,
               };
             }),
           };
@@ -180,4 +210,4 @@ const getFullCart = async ({ OrderMenus }, restaurantId) => {
   return { cart: full, totalPrice };
 };
 
-module.exports = { getFullCart };
+module.exports = { getFullCart, getFullMenuObj };

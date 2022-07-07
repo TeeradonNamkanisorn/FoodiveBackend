@@ -5,10 +5,12 @@ const {
   Order,
   Restaurant,
   sequelize,
+  Customer,
   OrderMenu,
 } = require('../models');
 const { Op, where, QueryTypes } = require('sequelize');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
+const clearFolder = require('../services/clearFolder');
 
 exports.getMe = async (req, res, next) => {
   try {
@@ -55,6 +57,8 @@ exports.updateProfile = async (req, res, next) => {
     res.json({ message: 'Update profile success.' });
   } catch (err) {
     next(err);
+  } finally {
+    clearFolder('./public/images');
   }
 };
 
@@ -63,12 +67,18 @@ exports.updateStatus = async (req, res, next) => {
     const driver = await Driver.findByPk(req.user.id);
     const { status } = req.body;
 
+    console.log('statue', status);
+
     if (!driver) {
       createError('You are unauthorize.', 400);
     }
 
-    if (status !== 'UNAVAILABLE' && status !== 'AVAILABLE') {
-      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE'", 400);
+    if (
+      status !== 'UNAVAILABLE' &&
+      status !== 'AVAILABLE' &&
+      status !== 'BUSY'
+    ) {
+      createError("Status must be 'AVAILABLE' or 'UNAVAILABLE' or 'BUSY'", 400);
     }
 
     if (driver.status === status) {
@@ -104,12 +114,28 @@ exports.updateLocation = async (req, res, next) => {
   }
 };
 
-exports.acceptOrder = async (req, res, next) => {};
+exports.acceptOrder = async (req, res, next) => {
+  try {
+    const driverId = req.user.id;
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    await Order.update({ driverId }, { where: { id } });
+
+    res.json({ message: `orderId : ${id} accepted by driverId : ${driverId}` });
+  } catch (err) {
+    next(err);
+  }
+};
 
 exports.searchOrder = async (req, res, next) => {
   try {
     const { latitude, longitude } = req.body;
     let order = await Order.findAll({
+      where: {
+        status: 'DRIVER_PENDING',
+      },
       include: [
         {
           model: Restaurant,
@@ -148,6 +174,104 @@ exports.getOrderById = async (req, res, next) => {
 
     if (order.status === 'IN_CART')
       createError('You cannot view this resource', 400);
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getIncome = async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { id } = req.body;
+    let order = await Order.findAll({
+      where: {
+        status: 'DELIVERED',
+        driverId: id,
+      },
+      attributes: [
+        [sequelize.fn('sum', sequelize.col('deliveryFee')), 'totalDeliveryFee'],
+      ],
+    });
+
+    res.json({ income: order });
+  } catch (err) {
+    await t.rollback();
+    next(err);
+  }
+};
+
+exports.deliveringStatus = async (req, res, next) => {
+  try {
+    const driverId = req.user.id;
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    await Order.update(
+      { status: 'DELIVERY_PENDING', driverId },
+      { where: { id } },
+    );
+
+    res.json({
+      message: `orderId : ${id} status : ${'DELIVERY_PENDING'} by driverId : ${driverId}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deliveredStatus = async (req, res, next) => {
+  try {
+    const driverId = req.user.id;
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    await Order.update({ status: 'DELIVERED' }, { where: { id } });
+
+    res.json({
+      message: `orderId : ${id} status : ${'DELIVERED'} by driverId : ${driverId}`,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDeliveryFee = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      createError('order id are required', 400);
+    }
+    let order = await Order.findOne({
+      where: {
+        id,
+      },
+      attributes: ['deliveryFee'],
+    });
+
+    res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCurrentOrder = async (req, res, next) => {
+  try {
+    const order = await Order.findOne({
+      where: {
+        driverId: req.user.id,
+        status: 'DELIVERY_PENDING',
+      },
+      include: {
+        model: Customer,
+        attributes: ['firstName', 'lastName', 'phoneNumber', 'profileImage'],
+      },
+    });
+
+    console.log(req.user.id);
 
     res.json({ order });
   } catch (err) {

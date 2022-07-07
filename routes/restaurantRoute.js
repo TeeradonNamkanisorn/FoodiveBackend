@@ -2,11 +2,21 @@ const multer = require('../middlewares/upload');
 
 const router = require('express').Router();
 const restaurantController = require('../controllers/restaurantController');
+const orderController = require('../controllers/orderController');
 const { uploadImage } = require('../middlewares/cloudinaryUploads');
 
 router.get('/getMe', restaurantController.getMe);
 
-router.patch(
+router.get(
+  '/getAllCategory',
+  restaurantController.getAllCategoryFromRestaurantId,
+);
+
+router.get('/getCategory/:categoryId', restaurantController.getCategoryById);
+
+router.get('/getDelivery', orderController.getDeliveryPendingByRestaurant);
+
+router.put(
   '/update',
   multer.single('image'),
   uploadImage,
@@ -50,6 +60,9 @@ router.put(
 router.post('/assign-tags', restaurantController.assignTags);
 router.put('/change-tags', restaurantController.changeTags);
 router.get('/pickDriver', restaurantController.pickDriver);
+router.get('/pendingOrders', orderController.restaurantGetPendingOrders);
+router.patch('/pendingOrders/:orderId', orderController.restaurantUpdateOrder);
+router.delete('/menu/:menuId', orderController.deleteMenu);
 
 module.exports = router;
 //

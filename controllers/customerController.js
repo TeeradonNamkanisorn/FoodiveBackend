@@ -18,16 +18,28 @@ const {
   calculatePriceFromMenuList,
   getCartMenuArrayWithoutOptions,
   getFullCart,
+  getFullMenuObj,
 } = require('../services/cartServices');
 const createError = require('../services/createError');
 const { destroy } = require('../utils/cloudinary');
 const { Op } = require('sequelize');
 const getDistanceFromLatLonInKm = require('../services/calcDistance');
+const clearFolder = require('../services/clearFolder');
 
 module.exports.createCart = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const { menus, restaurantId } = req.body;
+
+    const existCart = await Order.findOne({
+      where: {
+        customerId: req.user.id,
+        restaurantId: restaurantId,
+        status: 'IN_CART',
+      },
+    });
+
+    if (existCart) createError('Cart already exists', 400);
 
     const order = await Order.create(
       {
@@ -40,6 +52,12 @@ module.exports.createCart = async (req, res, next) => {
       },
     );
 
+    //validating objecttttttttt
+
+    const restaurantMenuObj = await getFullMenuObj(restaurantId);
+
+    menus.map((el) => console.log('option group', el.optionGroup));
+
     for (let menu of menus) {
       const menuId = menu.id;
       const menuComment = menu.comment;
@@ -49,6 +67,12 @@ module.exports.createCart = async (req, res, next) => {
       );
 
       for (let optionGroup of menu.optionGroups) {
+        if (
+          // If the the option group isn't on the eligable list
+          !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
+        ) {
+          createError('invalid option group');
+        }
         const orderOptionGroup = await OrderMenuOptionGroup.create(
           {
             orderMenuId: orderMenu.id,
@@ -58,6 +82,12 @@ module.exports.createCart = async (req, res, next) => {
         );
 
         for (let option of optionGroup.options) {
+          if (
+            !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
+              .options[option.id]
+          ) {
+            createError('invalid option');
+          }
           await OrderMenuOption.create(
             {
               orderMenuId: orderMenu.id,
@@ -94,46 +124,70 @@ module.exports.createCart = async (req, res, next) => {
   }
 };
 
-exports.appendMenu = async (req, res, next) => {
+exports.addMenusToCart = async (req, res, next) => {
   const t = await sequelize.transaction();
 
   try {
-    const { menu } = req.body;
+    const { menus } = req.body;
     const { cartId: orderId } = req.params;
+    const existCart = await Order.findByPk(orderId, { transaction: t });
 
-    const orderMenu = await OrderMenu.create({
-      orderId,
-      comment: menu.comment,
-      menuId: menu.id,
-    });
+    if (!existCart) createError("cart doesn't exist", 400);
+    if (existCart.status !== 'IN_CART')
+      createError('The current entity is not a cart.', 400);
+    const restaurantId = existCart.restaurantId;
 
-    for (let optionGroup of menu.optionGroups) {
-      console.log('asdfasdfas', optionGroup.id);
-      const orderOptionGroup = await OrderMenuOptionGroup.create(
+    const restaurantMenuObj = await getFullMenuObj(restaurantId);
+
+    for (let menu of menus) {
+      const orderMenu = await OrderMenu.create(
         {
-          orderMenuId: orderMenu.id,
-          menuOptionGroupId: optionGroup.id,
+          orderId,
+          comment: menu.comment,
+          menuId: menu.id,
         },
-        { transaction: t },
+        {
+          transaction: t,
+        },
       );
 
-      for (let option of optionGroup.options) {
-        await OrderMenuOption.create(
+      for (let optionGroup of menu.optionGroups) {
+        if (!restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]) {
+          createError('invalid option group');
+        }
+        const orderOptionGroup = await OrderMenuOptionGroup.create(
           {
             orderMenuId: orderMenu.id,
-            orderMenuOptionGroupId: orderOptionGroup.id,
-            menuOptionId: option.id,
+            menuOptionGroupId: optionGroup.id,
           },
           { transaction: t },
         );
+
+        for (let option of optionGroup.options) {
+          if (
+            !restaurantMenuObj[orderMenu.menuId].optionGroups[optionGroup.id]
+              .options[option.id]
+          ) {
+            createError('invalid option');
+          }
+          await OrderMenuOption.create(
+            {
+              orderMenuId: orderMenu.id,
+              orderMenuOptionGroupId: orderOptionGroup.id,
+              menuOptionId: option.id,
+            },
+            { transaction: t },
+          );
+        }
       }
     }
 
     await t.commit();
 
-    const cart = await Order.findByPk(orderId);
-
-    res.json({ message: 'successfully added menu to cart!' });
+    res.json({
+      message: 'successfully added menu to cart!',
+      cart: { id: existCart.id },
+    });
   } catch (error) {
     await t.rollback();
     next(error);
@@ -143,9 +197,13 @@ exports.appendMenu = async (req, res, next) => {
 exports.removeMenu = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const { orderMenuId } = req.body;
+    const { orderMenuId } = req.params;
+
+    console.log('orderMenuId', orderMenuId);
 
     const orderMenu = await OrderMenu.findByPk(orderMenuId, { transaction: t });
+
+    console.log('orderMenu', orderMenu);
 
     const orderMenuOptionGroups = await OrderMenuOptionGroup.findAll({
       where: {
@@ -386,14 +444,14 @@ exports.getMe = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
   try {
     const { firstName, lastName } = req.body;
-    const customer = req.user;
+    const customer = await Customer.findByPk(req.user.id);
 
     if (!customer) {
       createError('You are unauthorized', 400);
     }
 
     // check if not have any data to update
-    if (Object.keys(req.body).length === 0 && !req.imageFile) {
+    if (!firstName && !lastName && !req.imageFile) {
       createError('You cannot update empty data', 400);
     }
 
@@ -421,6 +479,8 @@ exports.updateProfile = async (req, res, next) => {
     res.json({ message: 'Update profile success' });
   } catch (err) {
     next(err);
+  } finally {
+    clearFolder('./public/images');
   }
 };
 
@@ -492,9 +552,42 @@ exports.createAddress = async (req, res, next) => {
   }
 };
 
+exports.getAllRestaurant = async (req, res, next) => {
+  try {
+    const { latitude, longitude } = req.body;
+
+    const restaurants = await Restaurant.findAll({
+      attributes: {
+        exclude: ['password'],
+      },
+    });
+
+    const restaurantsWithDistance = JSON.parse(JSON.stringify(restaurants)).map(
+      (res) => {
+        const distance = getDistanceFromLatLonInKm(
+          res.latitude,
+          res.longitude,
+          latitude,
+          longitude,
+        );
+        return { ...res, distance };
+      },
+    );
+
+    const sortedRestaurants = restaurantsWithDistance.sort(
+      (a, b) => a.distance - b.distance,
+    );
+
+    res.json({ restaurants: sortedRestaurants });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getRestaurantById = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const { latitude, longitude } = req.body;
 
     const restaurant = await Restaurant.findByPk(id, {
       include: {
@@ -511,7 +604,16 @@ exports.getRestaurantById = async (req, res, next) => {
       },
     });
 
-    res.json({ restaurant });
+    const distance = getDistanceFromLatLonInKm(
+      restaurant.latitude,
+      restaurant.longitude,
+      latitude,
+      longitude,
+    );
+
+    console.log('restaurantsWithDistance : ', distance);
+
+    res.json({ distance, restaurant });
   } catch (error) {
     next(error);
   }
@@ -565,9 +667,50 @@ exports.getAllCarts = async (req, res, next) => {
   }
 };
 
+exports.getAllRestaurantsOfCarts = async (req, res, next) => {
+  try {
+    const customerId = req.user.id;
+    const orders = await Order.findAll({
+      where: {
+        customerId,
+        status: 'IN_CART',
+      },
+      include: {
+        model: Restaurant,
+      },
+    });
+
+    const restaurants = JSON.parse(JSON.stringify(orders)).map((order) => {
+      return {
+        id: order.Restaurant.id,
+        name: order.Restaurant.name,
+        image: order.Restaurant.image,
+        latitude: order.Restaurant.latitude,
+        longitude: order.Restaurant.longitude,
+        cart: {
+          id: order.id,
+          price: null,
+          status: order.status,
+          customerId: order.customerId,
+        },
+      };
+    });
+
+    res.json({ restaurants });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getCart = async (req, res, next) => {
   try {
     const { cartId } = req.params;
+    const customer = req.user;
+
+    if (!customer) {
+      createError('You are unauthorized', 400);
+    }
+
     const cart = await Order.findByPk(cartId, {
       include: {
         model: OrderMenu,
@@ -581,6 +724,14 @@ exports.getCart = async (req, res, next) => {
     });
 
     if (!cart) createError('cart not found', 400);
+    if (cart.customerId !== req.user.id)
+      createError('Not allowed to view', 403);
+
+    console.log(customer);
+
+    if (customer.id !== cart.customerId) {
+      createError('You are unauthorized', 400);
+    }
 
     let cartSurface = await Order.findByPk(cartId);
     cartSurface = JSON.parse(JSON.stringify(cartSurface));
@@ -623,106 +774,6 @@ exports.getMenuById = async (req, res, next) => {
 
     res.json({ menu });
   } catch (err) {
-    next(err);
-  }
-};
-
-module.exports.fillCart = async (req, res, next) => {
-  const t = await sequelize.transaction();
-  try {
-    const { orderId } = req.params;
-    let cart = await Order.findByPk(orderId, {
-      include: {
-        model: OrderMenu,
-        include: [
-          {
-            model: Menu,
-          },
-          {
-            model: OrderMenuOptionGroup,
-            include: [
-              {
-                model: MenuOptionGroup,
-              },
-              {
-                model: OrderMenuOption,
-                include: MenuOption,
-              },
-            ],
-          },
-        ],
-      },
-      where: {
-        status: 'IN_CART',
-      },
-      transaction: t,
-    });
-
-    if (cart.status !== 'IN_CART') {
-      createError("The entity you're trying to edit is not a cart");
-    }
-    for (let orderMenu of cart.OrderMenus) {
-      const newMenuPrice = orderMenu.Menu.price;
-      const newMenuName = orderMenu.Menu.name;
-      const menuId = orderMenu.Menu.id;
-
-      await OrderMenu.update(
-        { name: newMenuName, price: newMenuPrice },
-        {
-          where: {
-            menuId,
-          },
-          transaction: t,
-        },
-      );
-      for (let orderMenuOptionGroup of orderMenu.OrderMenuOptionGroups) {
-        const newGroupName = orderMenuOptionGroup.MenuOptionGroup.name;
-        const groupId = orderMenuOptionGroup.MenuOptionGroup.id;
-        await OrderMenuOptionGroup.update(
-          { name: newGroupName },
-          { where: { menuOptionGroupId: groupId }, transaction: t },
-        );
-
-        for (let orderMenuOption of orderMenuOptionGroup.OrderMenuOptions) {
-          const newOptionName = orderMenuOption.MenuOption.name;
-          const newOptionPrice = orderMenuOption.MenuOption.price;
-          const optionId = orderMenuOption.MenuOption.id;
-          console.log(newOptionPrice);
-          await OrderMenuOption.update(
-            { name: newOptionName, price: newOptionPrice },
-            {
-              where: {
-                menuOptionId: optionId,
-              },
-              transaction: t,
-            },
-          );
-        }
-      }
-    }
-
-    cart = await Order.findByPk(orderId, {
-      include: {
-        model: OrderMenu,
-        include: [
-          {
-            model: OrderMenuOptionGroup,
-            include: [
-              {
-                model: OrderMenuOption,
-              },
-            ],
-          },
-        ],
-      },
-      transaction: t,
-    });
-
-    res.json({ cart });
-
-    await t.commit();
-  } catch (err) {
-    await t.rollback();
     next(err);
   }
 };

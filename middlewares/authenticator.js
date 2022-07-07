@@ -5,6 +5,7 @@ const { Restaurant, Customer, Driver } = require('../models');
 module.exports = (role) => async (req, res, next) => {
   try {
     const { authorization } = req.headers;
+
     if (!authorization || !authorization.startsWith('Bearer')) {
       createError('You are unauthorized', 401);
     }
@@ -45,6 +46,8 @@ module.exports = (role) => async (req, res, next) => {
     }
 
     if (!user) createError('You are unauthorized', 401);
+
+    user = { ...JSON.parse(JSON.stringify(user)), role: payload.role };
 
     req.user = user;
     next();

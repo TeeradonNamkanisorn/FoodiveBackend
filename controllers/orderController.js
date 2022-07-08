@@ -321,7 +321,13 @@ exports.customerGetCurrentPendingOrder = async (req, res, next) => {
       },
       include: {
         model: Driver,
-        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
+        attributes: [
+          'firstName',
+          'lastName',
+          'driverImage',
+          'phoneNumber',
+          'id',
+        ],
       },
     });
 

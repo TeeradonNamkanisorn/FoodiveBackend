@@ -30,6 +30,8 @@ router.patch(
   orderController.editFoodPicture,
 );
 
+router.patch('/update/menu', orderController.editFoodMenu);
+
 router.patch('/updateStatus', restaurantController.updateStatusRes);
 
 router.patch('/updateAddress', restaurantController.updateAddressRes);

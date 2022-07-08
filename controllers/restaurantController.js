@@ -36,7 +36,6 @@ exports.getAllCategoryFromRestaurantId = async (req, res, next) => {
         restaurantId: id,
       },
       order: [['createdAt', 'DESC']],
-
     });
 
     res.json({ category });
@@ -66,7 +65,6 @@ exports.getCategoryById = async (req, res, next) => {
       ],
       order: [[Menu, 'id', 'DESC']],
     });
-
 
     res.json({ category });
   } catch (err) {
@@ -149,13 +147,14 @@ exports.updateStatusRes = async (req, res, next) => {
 exports.updateAddressRes = async (req, res, next) => {
   try {
     const { longitude, latitude } = req.body;
-    const restaurant = req.user;
+    console.log(latitude, longitude);
+    const restaurant = await Restaurant.findByPk(req.user.id);
 
     if (!latitude && !longitude) {
       createError('Address is required', 400);
     }
 
-    if ((longitude, latitude)) {
+    if (longitude !== null && latitude !== null) {
       restaurant.longitude = longitude;
       restaurant.latitude = latitude;
     }

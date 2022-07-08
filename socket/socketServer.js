@@ -34,6 +34,7 @@ function addOnlineUser(userData, role) {
 function updateDriverPosition(userData) {
   const driver = onlineUsers.drivers.find((user) => user.id === userData.id);
   if (!driver) return;
+  console.log(userData);
   driver.latitude = userData.latitude;
   driver.longitude = userData.longitude;
   driver.status = userData.status;
@@ -60,6 +61,7 @@ const findRestaurantSocketId = (restaurantId) => {
 io.on('connection', (socket) => {
   socket.on('newUser', (data) => {
     addOnlineUser({ ...data.info, socketId: socket.id }, data.role);
+    // console.log(onlineUsers);
   });
 
   socket.on('updateDriverPosition', (userData) => {
@@ -85,6 +87,8 @@ io.on('connection', (socket) => {
           return driver.latitude !== null;
         });
 
+        console.log(availableDrivers);
+
         availableDrivers.filter((driver) => {
           const distance = getDistanceFromLatLonInKm(
             +restaurantLatitude,
@@ -92,6 +96,7 @@ io.on('connection', (socket) => {
             +driver.latitude,
             +driver.longitude,
           );
+          console.log(distance, driver.status);
 
           return distance <= 10 && driver.status === 'AVAILABLE';
         });
@@ -102,6 +107,7 @@ io.on('connection', (socket) => {
             message: 'You may accept the upcoming order',
           });
         }
+        console.log(socketIds);
       } catch (err) {
         console.log(err.message);
         io.to(socket.id).emit('error', { message: err.message });

@@ -299,6 +299,7 @@ const drivers = [
     latitude: 13.744573458078486,
     longitude: 100.52333650466416,
     driverImage: 'https://images.emojiterra.com/twitter/512px/1f92e.png',
+    driverImagePublicId: 'none',
   },
   {
     email: 'Fox@gmail.com',
@@ -308,6 +309,9 @@ const drivers = [
     phoneNumber: '0918009999',
     latitude: 13.744573458078486,
     longitude: 100.52333650466416,
+    driverImage:
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJMcbhvP9CrmDfXODm6xhHl-OUTVVIdzRaCA&usqp=CAU',
+    driverImagePublicId: 'none',
   },
 ];
 

@@ -163,13 +163,13 @@ exports.loginCustomer = async (req, res, next) => {
     });
 
     if (!customer) {
-      createError('You are unauthorize', 400);
+      createError('Invalid email or password', 400);
     }
 
     const isMatch = await bcrypt.compare(password, customer.password);
 
     if (!isMatch) {
-      createError('You are unauthorize', 400);
+      createError('Invalid email or password', 400);
     }
 
     const token = genToken({ email, role: 'customer' });

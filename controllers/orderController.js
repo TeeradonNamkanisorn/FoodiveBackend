@@ -362,26 +362,30 @@ exports.editFoodPicture = async (req, res, next) => {
 };
 
 exports.editFoodMenu = async (req, res, next) => {
-  const { menuId, name, price } = req.body;
-  const menu = await Menu.findByPk(menuId);
+  try {
+    const { menuId, name, price } = req.body;
+    const menu = await Menu.findByPk(menuId);
 
-  if (menu.restaurantId !== req.user.id) {
-    createError('You are not the owner of this restaurant', 400);
+    if (menu.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant', 400);
+    }
+
+    if (!menu) {
+      createError('Menu not found', 400);
+    }
+
+    if (!name) {
+      createError('foodname is required', 400);
+    }
+
+    if (!price) {
+      createError('Price is required', 400);
+    }
+
+    await Menu.update({ name, price }, { where: { id: menuId } });
+
+    res.json({ message: 'Update menu success.' });
+  } catch (err) {
+    next(err);
   }
-
-  if (!menu) {
-    createError('Menu not found', 400);
-  }
-
-  if (!name) {
-    createError('foodname is required', 400);
-  }
-
-  if (!price) {
-    createError('Price is required', 400);
-  }
-
-  await Menu.update({ name, price }, { where: { id: menuId } });
-
-  res.json({ message: 'Update menu success.' });
 };

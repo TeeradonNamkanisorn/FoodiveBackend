@@ -16,12 +16,18 @@ router.get('/getCategory/:categoryId', restaurantController.getCategoryById);
 
 router.get('/getDelivery', orderController.getDeliveryPendingByRestaurant);
 
-
 router.put(
   '/update',
   multer.single('image'),
   uploadImage,
   restaurantController.updateRestaurant,
+);
+
+router.patch(
+  '/update/picture',
+  multer.single('image'),
+  uploadImage,
+  orderController.editFoodPicture,
 );
 
 router.patch('/updateStatus', restaurantController.updateStatusRes);

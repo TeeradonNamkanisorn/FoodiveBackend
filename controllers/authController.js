@@ -9,6 +9,8 @@ const {
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const createError = require('../services/createError');
+const nodemailer = require('nodemailer');
+const generator = require('generate-password');
 
 const { Op } = require('sequelize');
 const e = require('express');
@@ -69,37 +71,8 @@ exports.googleLoginCustomer = async (req, res, next) => {
 
     const user = await Customer.findOne({ where: { googleId: payload.sub } });
 
-    const token = genToken({ email: user.email, role: 'customer' });
-
-    res.status(200).json({ token });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.googleLoginDriver = async (req, res, next) => {
-  try {
-    const { googleData } = req.body;
-
-    const payload = jwt.decode(googleData);
-
-    const existingUser = await Driver.findOne({
-      where: { googleId: payload.sub },
-    });
-
-    if (!existingUser) {
-      const newUser = await Driver.create({
-        firstName: payload.given_name,
-        lastName: payload.family_name,
-        email: payload.email,
-        driverImage: payload.picture,
-        googleId: payload.sub,
-      });
-    }
-
-    const user = await Driver.findOne({ where: { googleId: payload.sub } });
-
-    const token = genToken({ email: user.email, role: 'driver' });
+    console.log(googleData);
+    const token = genToken({ email: user.email, role });
 
     res.status(200).json({ token });
   } catch (err) {
@@ -218,13 +191,13 @@ exports.loginCustomer = async (req, res, next) => {
     });
 
     if (!customer) {
-      createError('You are unauthorize', 400);
+      createError('Invalid email or password', 400);
     }
 
     const isMatch = await bcrypt.compare(password, customer.password);
 
     if (!isMatch) {
-      createError('You are unauthorize', 400);
+      createError('Invalid email or password', 400);
     }
 
     const token = genToken({ email, role: 'customer' });
@@ -317,4 +290,117 @@ exports.loginDriver = async (req, res, next) => {
   }
 };
 
-//
+exports.forgetPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const customer = await Customer.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!customer) {
+      createError('You email not found', 400);
+    }
+
+    const forgetPasswordToken = generator.generate({
+      length: 6,
+      lowercase: false,
+      numbers: true,
+    });
+
+    await Customer.update(
+      {
+        forgetPasswordToken,
+      },
+      {
+        where: {
+          email,
+        },
+      },
+    );
+
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_HOST,
+        pass: process.env.PASSWORD_HOST,
+      },
+    });
+
+    const option = {
+      from: process.env.EMAIL_HOST,
+      to: customer.email,
+      subject: 'Forget Password',
+      html: `
+      <p>Test</p>
+      <p>Nodemailer ENV</p>
+      <p>${forgetPasswordToken}</p>
+      `,
+    };
+
+    transporter.sendMail(option, (err, info) => {
+      if (err) {
+        createError('Something went wrong', 400);
+      } else {
+        res.json({
+          message: 'Recovery code was send please check your mail',
+          token: forgetPasswordToken,
+        });
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.forgetPasswordConfirm = async (req, res, next) => {
+  try {
+    const { email, forgetPasswordToken, password, confirmPassword } = req.body;
+
+    const customer = await Customer.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (!customer) {
+      createError('You email not found', 400);
+    }
+
+    if (!forgetPasswordToken) {
+      createError('Please enter your recovery code', 400);
+    }
+
+    if (customer.forgetPasswordToken !== forgetPasswordToken) {
+      createError('Recovery code invalid', 400);
+    }
+
+    if (!password) {
+      createError('Please enter your password', 400);
+    }
+
+    if (password !== confirmPassword) {
+      createError('Password not match', 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await Customer.update(
+      {
+        password: hashedPassword,
+        forgetPasswordToken: null,
+      },
+      {
+        where: {
+          email,
+        },
+      },
+    );
+
+    res.json({ message: 'Your password was changed' });
+  } catch (err) {
+    next(err);
+  }
+};

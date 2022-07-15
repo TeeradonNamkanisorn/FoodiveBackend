@@ -12,13 +12,20 @@ const {
   MenuOption,
 } = require('../models');
 const { Op } = require('sequelize');
+const { destroy } = require('../utils/cloudinary');
 
 module.exports.fillCart = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
     const { orderId } = req.params;
-    const { latitude, longitude, address } = req.body;
-    let totalPrice = 0;
+    const {
+      latitude,
+      longitude,
+      address,
+      distance,
+      deliveryFee = 0,
+    } = req.body;
+    let totalPrice = deliveryFee;
 
     let cart = await Order.findByPk(orderId, {
       include: {
@@ -52,7 +59,7 @@ module.exports.fillCart = async (req, res, next) => {
         status: {
           [Op.or]: ['DELIVERY_PENDING', 'DRIVER_PENDING', 'RESTAURANT_PENDING'],
         },
-        restaurantId: cart.restaurantId,
+        customerId: req.user.id,
       },
     });
 
@@ -62,7 +69,13 @@ module.exports.fillCart = async (req, res, next) => {
       );
 
     await Order.update(
-      { address, customerLatitude: latitude, customerLongitude: longitude },
+      {
+        address,
+        customerLatitude: latitude,
+        customerLongitude: longitude,
+        distance,
+        deliveryFee,
+      },
       { where: { id: orderId }, transaction: t },
     );
 
@@ -309,11 +322,76 @@ exports.customerGetCurrentPendingOrder = async (req, res, next) => {
       },
       include: {
         model: Driver,
-        attributes: ['firstName', 'lastName', 'driverImage', 'phoneNumber'],
+        attributes: [
+          'firstName',
+          'lastName',
+          'driverImage',
+          'phoneNumber',
+          'id',
+        ],
       },
     });
 
     res.json({ order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.editFoodPicture = async (req, res, next) => {
+  try {
+    const { menuId } = req.body;
+    const menu = await Menu.findByPk(menuId);
+
+    if (menu.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant', 400);
+    }
+
+    if (!menu) {
+      createError('Menu not found', 400);
+    }
+
+    if (req.imageFile && menu.menuImage) {
+      const deletePreviousImage = await destroy(menu.menuImagePublicId);
+    }
+
+    if (req.imageFile) {
+      menu.menuImagePublicId = req.imageFile.public_id;
+      menu.menuImage = req.imageFile.secure_url;
+    }
+
+    await menu.save();
+
+    res.json({ message: 'Update menu picture success.' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.editFoodMenu = async (req, res, next) => {
+  try {
+    const { menuId, name, price } = req.body;
+    const menu = await Menu.findByPk(menuId);
+
+    if (menu.restaurantId !== req.user.id) {
+      createError('You are not the owner of this restaurant', 400);
+    }
+
+    if (!menu) {
+      createError('Menu not found', 400);
+    }
+
+    if (!name) {
+      createError('foodname is required', 400);
+    }
+
+    if (!price) {
+      createError('Price is required', 400);
+    }
+
+    await Menu.update({ name, price }, { where: { id: menuId } });
+
+    res.json({ message: 'Update menu success.' });
   } catch (err) {
     next(err);
   }

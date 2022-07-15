@@ -19,6 +19,8 @@ authRoute.post('/login/restaurant', authController.loginRestaurant);
 // CUSTOMER
 authRoute.post('/register/customer', authController.registerCustomer);
 authRoute.post('/login/customer', authController.loginCustomer);
+authRoute.post('/forget-password', authController.forgetPassword);
+authRoute.patch('/change-password', authController.forgetPasswordConfirm);
 
 // DRIVER
 authRoute.post('/register/driver', authController.registerDriver);

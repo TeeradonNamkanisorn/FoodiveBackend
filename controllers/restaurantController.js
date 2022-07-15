@@ -36,7 +36,6 @@ exports.getAllCategoryFromRestaurantId = async (req, res, next) => {
         restaurantId: id,
       },
       order: [['createdAt', 'DESC']],
-
     });
 
     res.json({ category });
@@ -66,7 +65,6 @@ exports.getCategoryById = async (req, res, next) => {
       ],
       order: [[Menu, 'id', 'DESC']],
     });
-
 
     res.json({ category });
   } catch (err) {
@@ -149,13 +147,14 @@ exports.updateStatusRes = async (req, res, next) => {
 exports.updateAddressRes = async (req, res, next) => {
   try {
     const { longitude, latitude } = req.body;
-    const restaurant = req.user;
+    console.log(latitude, longitude);
+    const restaurant = await Restaurant.findByPk(req.user.id);
 
     if (!latitude && !longitude) {
       createError('Address is required', 400);
     }
 
-    if ((longitude, latitude)) {
+    if (longitude !== null && latitude !== null) {
       restaurant.longitude = longitude;
       restaurant.latitude = latitude;
     }
@@ -244,7 +243,7 @@ exports.addMenu = async (req, res, next) => {
 
     await t.commit();
 
-    res.status(201).json({ menu });
+    res.status(201).json({ menu, message: 'Create menu success' });
   } catch (err) {
     await t.rollback();
     next(err);
@@ -652,16 +651,16 @@ exports.pickDriver = async (req, res, next) => {
     if (!driverData) createError('driver not found');
     driverData.sort((a, b) => {
       const distanceFromA = getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        a.latitude,
-        a.longitude,
+        +latitude,
+        +longitude,
+        +a.latitude,
+        +a.longitude,
       );
       const distanceFromB = getDistanceFromLatLonInKm(
-        latitude,
-        longitude,
-        b.latitude,
-        b.longitude,
+        +latitude,
+        +longitude,
+        +b.latitude,
+        +b.longitude,
       );
       return distanceFromA - distanceFromB;
     });
@@ -669,10 +668,10 @@ exports.pickDriver = async (req, res, next) => {
     const chosenDriver = driverData[0];
 
     chosenDriver.distance = getDistanceFromLatLonInKm(
-      latitude,
-      longitude,
-      chosenDriver.latitude,
-      chosenDriver.longitude,
+      +latitude,
+      +longitude,
+      +chosenDriver.latitude,
+      +chosenDriver.longitude,
     );
     //
     res.json({ driver: chosenDriver });

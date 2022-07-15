@@ -17,6 +17,7 @@ module.exports = (role) => async (req, res, next) => {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET_KEY);
 
+    console.log(payload);
     if (payload.role !== role) createError('Invalid role', 401);
 
     let user;
